@@ -7,6 +7,7 @@ import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 public interface IChat extends IObservableRemoto {
 
-	public void enviarMensaje(String mensaje) throws RemoteException;
-	public List<String> getMensajes() throws RemoteException;
+    public void enviarMensaje(String mensaje) throws RemoteException;
+
+    public List<String> getMensajes() throws RemoteException;
 }

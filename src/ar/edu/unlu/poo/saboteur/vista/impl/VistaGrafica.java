@@ -18,60 +18,60 @@ import ar.edu.unlu.poo.saboteur.vista.IVista;
 
 public class VistaGrafica implements IVista {
 
-	//private JList<String> chatHistory;
-	private DefaultListModel<String> listModel;
+    // private JList<String> chatHistory;
+    private DefaultListModel<String> listModel;
 
-	public VistaGrafica(Controlador controlador) {
-		controlador.setVista(this);
+    public VistaGrafica(Controlador controlador) {
+        controlador.setVista(this);
 
-		EventQueue.invokeLater(() -> {
-			System.out.println(Thread.currentThread().getName());
-			JFrame frame = new JFrame();
-			frame.setSize(800, 600);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        EventQueue.invokeLater(() -> {
+            System.out.println(Thread.currentThread().getName());
+            JFrame frame = new JFrame();
+            frame.setSize(800, 600);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			listModel = new DefaultListModel<>();
-			JList<String> historial = new JList<>(listModel);
+            listModel = new DefaultListModel<>();
+            JList<String> historial = new JList<>(listModel);
 
-			JTextField textoDelUsuario = new JTextField();
-			textoDelUsuario.setSize(500, 20);
+            JTextField textoDelUsuario = new JTextField();
+            textoDelUsuario.setSize(500, 20);
 
-			JButton botonEnviar = new JButton("Enviar");
-			botonEnviar.addActionListener(event -> {
-				if (textoDelUsuario.getText() != null && !textoDelUsuario.getText().isEmpty()) {
-					controlador.enviarMensaje(textoDelUsuario.getText());
-				}
-				textoDelUsuario.setText("");
-			});
+            JButton botonEnviar = new JButton("Enviar");
+            botonEnviar.addActionListener(event -> {
+                if (textoDelUsuario.getText() != null && !textoDelUsuario.getText().isEmpty()) {
+                    controlador.enviarMensaje(textoDelUsuario.getText());
+                }
+                textoDelUsuario.setText("");
+            });
 
-			Container panelPrincipal = frame.getContentPane();
-			panelPrincipal.setLayout(new FlowLayout());
+            Container panelPrincipal = frame.getContentPane();
+            panelPrincipal.setLayout(new FlowLayout());
 
-			JPanel panelChat = new JPanel();
-			panelChat.setLayout(new GridLayout(2, 1));
-			panelChat.add(historial);
+            JPanel panelChat = new JPanel();
+            panelChat.setLayout(new GridLayout(2, 1));
+            panelChat.add(historial);
 
-			panelPrincipal.add(panelChat);
+            panelPrincipal.add(panelChat);
 
-			JPanel panelInferiorChat = new JPanel();
-			panelInferiorChat.setLayout(new GridLayout(1, 2));
-			panelInferiorChat.add(textoDelUsuario);
-			panelInferiorChat.add(botonEnviar);
-			panelChat.add(panelInferiorChat);
+            JPanel panelInferiorChat = new JPanel();
+            panelInferiorChat.setLayout(new GridLayout(1, 2));
+            panelInferiorChat.add(textoDelUsuario);
+            panelInferiorChat.add(botonEnviar);
+            panelChat.add(panelInferiorChat);
 
-			panelPrincipal.add(panelChat);
-			frame.setVisible(true);
-		});
-	}
+            panelPrincipal.add(panelChat);
+            frame.setVisible(true);
+        });
+    }
 
-	@Override
-	public void iniciar() {
-		
-	}
+    @Override
+    public void iniciar() {
 
-	@Override
-	public void mostrarMensajes(List<String> mensajes) {
-		listModel.clear();
-		mensajes.forEach(mensaje -> listModel.addElement(mensaje));
-	}
+    }
+
+    @Override
+    public void mostrarMensajes(List<String> mensajes) {
+        listModel.clear();
+        mensajes.forEach(mensaje -> listModel.addElement(mensaje));
+    }
 }
