@@ -1,9 +1,15 @@
+# Java
+
 .class
 .jar
+
+# Eclipse
+
 .classpath
 .project
-
-
 .settings/
+
+# Otros
+
 bin/
 lib/
