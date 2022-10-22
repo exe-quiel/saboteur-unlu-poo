@@ -18,7 +18,7 @@ public class Chat extends ObservableRemoto implements IChat {
 
     @Override
     public void enviarMensaje(String mensaje) throws RemoteException {
-        System.out.println("Legó mensaje: " + mensaje);
+        System.out.println("Llegó mensaje: " + mensaje);
         this.mensajes.add(mensaje);
         try {
             this.notificarObservadores(Eventos.NUEVO_MENSAJE);

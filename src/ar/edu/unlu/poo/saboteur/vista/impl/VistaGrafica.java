@@ -4,6 +4,8 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -42,6 +44,27 @@ public class VistaGrafica implements IVista {
                     controlador.enviarMensaje(textoDelUsuario.getText());
                 }
                 textoDelUsuario.setText("");
+            });
+
+            textoDelUsuario.addKeyListener(new KeyListener() {
+
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    if ("\n".charAt(0) == e.getKeyChar() && textoDelUsuario.getText().length() > 0) {
+                        System.out.println("Clicked");
+                        botonEnviar.doClick();
+                    }
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    // Sin implementación
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                 // Sin implementación
+                }
             });
 
             Container panelPrincipal = frame.getContentPane();
