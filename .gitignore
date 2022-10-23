@@ -9,6 +9,11 @@
 .project
 .settings/
 
+# DrawIO
+
+*.bkp
+*.dtmp
+
 # Otros
 
 bin/
