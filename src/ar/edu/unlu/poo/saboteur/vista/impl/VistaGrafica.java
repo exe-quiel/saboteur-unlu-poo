@@ -10,38 +10,49 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import ar.edu.unlu.poo.saboteur.controlador.Controlador;
+import ar.edu.unlu.poo.saboteur.modelo.impl.Jugador;
+import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 
 public class VistaGrafica implements IVista {
 
-    // private JList<String> chatHistory;
-    private DefaultListModel<String> listModel;
+    private String nombreJugador;
+    private DefaultListModel<String> historialDeChat;
+    private DefaultListModel<String> jugadores;
+    private Jugador jugador;
+    private JButton botonEnviar;
 
-    public VistaGrafica(Controlador controlador) {
+    public VistaGrafica(Controlador controlador, String nombreJugador) {
+        this.nombreJugador = nombreJugador;
+
         controlador.setVista(this);
 
         EventQueue.invokeLater(() -> {
-            System.out.println(Thread.currentThread().getName());
             JFrame frame = new JFrame();
             frame.setSize(800, 600);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setTitle("Saboteur - " + this.nombreJugador);
 
-            listModel = new DefaultListModel<>();
-            JList<String> historial = new JList<>(listModel);
+            historialDeChat = new DefaultListModel<>();
+            JList<String> historial = new JList<>(historialDeChat);
 
             JTextField textoDelUsuario = new JTextField();
             textoDelUsuario.setSize(500, 20);
 
-            JButton botonEnviar = new JButton("Enviar");
+            botonEnviar = new JButton("Enviar");
+
+            botonEnviar.setEnabled(nombreJugador.endsWith("-1"));
+
             botonEnviar.addActionListener(event -> {
                 if (textoDelUsuario.getText() != null && !textoDelUsuario.getText().isEmpty()) {
-                    controlador.enviarMensaje(textoDelUsuario.getText());
+                    controlador.enviarMensaje(new Mensaje(this.nombreJugador, textoDelUsuario.getText()));
                 }
                 textoDelUsuario.setText("");
             });
@@ -63,20 +74,20 @@ public class VistaGrafica implements IVista {
 
                 @Override
                 public void keyPressed(KeyEvent e) {
-                 // Sin implementación
+                    // Sin implementación
                 }
             });
 
             Container panelPrincipal = frame.getContentPane();
             panelPrincipal.setLayout(new FlowLayout());
 
-            JPanel panelChat = new JPanel();
+            JComponent panelChat = new JPanel();
             panelChat.setLayout(new GridLayout(2, 1));
             panelChat.add(historial);
 
             panelPrincipal.add(panelChat);
 
-            JPanel panelInferiorChat = new JPanel();
+            JComponent panelInferiorChat = new JPanel();
             panelInferiorChat.setLayout(new GridLayout(1, 2));
             panelInferiorChat.add(textoDelUsuario);
             panelInferiorChat.add(botonEnviar);
@@ -89,12 +100,25 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void iniciar() {
-
+        
     }
 
     @Override
-    public void mostrarMensajes(List<String> mensajes) {
-        listModel.clear();
-        mensajes.forEach(mensaje -> listModel.addElement(mensaje));
+    public void mostrarMensajes(List<Mensaje> mensajes) {
+        historialDeChat.clear();
+        mensajes
+            .stream()
+            .map(mensaje -> String.format("%s: %s", mensaje.getJugador(), mensaje.getTexto()))
+            .forEach(historialDeChat::addElement);
+    }
+
+    @Override
+    public void cambiarTurno(String idJugador) {
+        System.out.println("Nuevo turno: [" + idJugador + "]");
+        botonEnviar.setEnabled(this.nombreJugador.equals(idJugador));
+    }
+
+    public String getNombreJugador() {
+        return nombreJugador;
     }
 }
