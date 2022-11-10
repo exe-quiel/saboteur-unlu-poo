@@ -1,21 +1,22 @@
 package ar.edu.unlu.poo.saboteur.controlador;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
-import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
-import ar.edu.unlu.poo.saboteur.modelo.IChat;
+import ar.edu.unlu.poo.saboteur.modelo.IJuego;
+import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
-public class Controlador implements IControladorRemoto {
+public class ControladorJuego implements IControladorRemoto {
 
-    private IChat chat;
+    private IJuego juego;
     private IVista vista;
 
-    public Controlador() {
+    public ControladorJuego() {
 
     }
 
@@ -28,12 +29,20 @@ public class Controlador implements IControladorRemoto {
         if (arg1 instanceof Evento) {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
+            case NUEVO_JUGADOR:
+                //vista.actualizarJugadores(this.chat.getDatosJugadores());
+                break;
+            case JUGADOR_SE_VA:
+                break;
+            case USA_CARTA:
+                vista.mostrarGrilla(evento.getX(), evento.getY());
+                break;
             case NUEVO_MENSAJE:
-                vista.mostrarMensajes(this.chat.getMensajes());
-                vista.cambiarTurno(evento.getIdJugador());
+                vista.mostrarMensajes(this.juego.getMensajes());
+                //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
-                vista.cambiarTurno(evento.getIdJugador());
+                vista.cambiarTurno(evento.getJugadorOrigen());
             default:
                 break;
             }
@@ -42,18 +51,27 @@ public class Controlador implements IControladorRemoto {
 
     @Override
     public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
-        this.chat = (IChat) arg0;
+        this.juego = (IJuego) arg0;
+    }
+
+    public void jugarCarta(byte x, byte y) throws RemoteException {
+        this.juego.jugarCarta(x, y);
     }
 
     public void enviarMensaje(Mensaje mensaje) {
         try {
-            this.chat.enviarMensaje(mensaje);
+            this.juego.enviarMensaje(mensaje);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
     public String generarNombreJugador() throws RemoteException {
-        return this.chat.generarNombreJugador();
+        return this.juego.generarNombreJugador();
+    }
+
+    public List<String> obtenerNombresJugadores() throws RemoteException {
+        return this.juego.getDatosJugadores();
+        
     }
 }

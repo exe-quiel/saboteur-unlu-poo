@@ -8,33 +8,47 @@ public class Evento implements Serializable {
      * 
      */
     private static final long serialVersionUID = -7521774005062357442L;
-    private String idJugador;
+    private String jugadorOrigen;
+    private String jugadorDestino;
+    private byte x;
+    private byte y;
     private TipoEvento tipoEvento;
+
+    public Evento(TipoEvento tipoEvento, String nombreJugador) {
+        super();
+        this.tipoEvento = tipoEvento;
+        this.jugadorOrigen = nombreJugador;
+    }
+
+    public Evento(TipoEvento tipoEvento, byte x, byte y) {
+        super();
+        this.tipoEvento = tipoEvento;
+        this.x = x;
+        this.y = y;
+    }
 
     public Evento(TipoEvento tipoEvento) {
         super();
         this.tipoEvento = tipoEvento;
     }
 
-    public Evento(String idJugador, TipoEvento tipoEvento) {
-        super();
-        this.idJugador = idJugador;
-        this.tipoEvento = tipoEvento;
+    public String getJugadorOrigen() {
+        return jugadorOrigen;
     }
 
-    public String getIdJugador() {
-        return idJugador;
+    public String getJugadorDestino() {
+        return jugadorDestino;
     }
 
-    public void setIdJugador(String idJugador) {
-        this.idJugador = idJugador;
+    public byte getX() {
+        return x;
+    }
+
+    public byte getY() {
+        return y;
     }
 
     public TipoEvento getTipoEvento() {
         return tipoEvento;
-    }
-
-    public void setTipoEvento(TipoEvento tipoEvento) {
-        this.tipoEvento = tipoEvento;
     }
 }

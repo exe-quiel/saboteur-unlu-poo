@@ -11,4 +11,8 @@ public interface IVista {
     public void mostrarMensajes(List<Mensaje> mensajes);
 
     public void cambiarTurno(String idJugador);
+
+    public void actualizarJugadores(List<String> jugadores);
+
+    public void mostrarGrilla(byte x, byte y);
 }

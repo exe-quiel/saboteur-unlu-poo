@@ -77,4 +77,9 @@ public class Jugador implements Serializable {
         }
         throw new RuntimeException("Mandaste cualquier carta");
     }
+
+    public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
+        this.mano.clear();
+        this.mano.addAll(cartasDeJuego);
+    }
 }
