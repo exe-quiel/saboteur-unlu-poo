@@ -32,6 +32,11 @@ public class Evento implements Serializable {
         this.tipoEvento = tipoEvento;
     }
 
+    public Evento(TipoEvento tipoEvento, String nombreJugador, byte x, byte y) {
+        this(tipoEvento, x, y);
+        this.jugadorOrigen = nombreJugador;
+    }
+
     public String getJugadorOrigen() {
         return jugadorOrigen;
     }

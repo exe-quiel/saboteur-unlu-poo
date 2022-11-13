@@ -29,13 +29,14 @@ public class ControladorJuego implements IControladorRemoto {
         if (arg1 instanceof Evento) {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
-            case NUEVO_JUGADOR:
+            case JUGADOR_ENTRA:
                 //vista.actualizarJugadores(this.chat.getDatosJugadores());
                 break;
-            case JUGADOR_SE_VA:
+            case JUGADOR_SALE:
                 break;
             case USA_CARTA:
                 vista.mostrarGrilla(evento.getX(), evento.getY());
+                vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case NUEVO_MENSAJE:
                 vista.mostrarMensajes(this.juego.getMensajes());

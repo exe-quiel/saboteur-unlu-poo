@@ -41,7 +41,8 @@ public class Juego extends ObservableRemoto implements IJuego {
         System.out.println(String.format("(%s,%s)", x, y));
         this.grilla[y][x] = 1;
         try {
-            this.notificarObservadores(new Evento(TipoEvento.USA_CARTA, x, y));
+            incrementarTurno();
+            this.notificarObservadores(new Evento(TipoEvento.USA_CARTA, jugadores.get(indiceJugadorTurno).getNombre(), x, y));
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -55,7 +56,6 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.mensajes.add(mensaje);
         try {
             //this.notificarObservadores(new Evento(TipoEvento.NUEVO_MENSAJE));
-            incrementarTurno();
             Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE, jugadores.get(indiceJugadorTurno).getNombre());
             this.notificarObservadores(evento);
         } catch (RemoteException e) {

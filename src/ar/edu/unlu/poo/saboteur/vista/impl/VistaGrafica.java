@@ -2,6 +2,7 @@ package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
@@ -44,6 +45,7 @@ public class VistaGrafica implements IVista {
     private Jugador jugador;
     private JButton botonEnviar;
     private JComponent tablero;
+    private boolean esMiTurno;
 
     public VistaGrafica(ControladorJuego controladorJuego, String nombreJugador) {
         this.nombreJugador = nombreJugador;
@@ -175,7 +177,12 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void iniciar() {
-
+        if ("Jugador-1".equals(nombreJugador)) {
+            esMiTurno = true;
+            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
     }
 
     @Override
@@ -194,7 +201,12 @@ public class VistaGrafica implements IVista {
     @Override
     public void cambiarTurno(String idJugador) {
         System.out.println("Nuevo turno: [" + idJugador + "]");
-        //botonEnviar.setEnabled(this.nombreJugador.equals(idJugador));
+        if (idJugador.equals(nombreJugador)) {
+            esMiTurno = true;
+            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
     }
 
     public String getNombreJugador() {
@@ -241,10 +253,16 @@ public class VistaGrafica implements IVista {
 
                 @Override
                 public void mouseClicked(MouseEvent event) {
-                    try {
-                        controlador.jugarCarta(posicionX, posicionY);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
+                    System.out.println("[" + nombreJugador + "] -> " + esMiTurno);
+                    boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
+                    if (esMiTurno) {
+                        try {
+                            controlador.jugarCarta(posicionX, posicionY);
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("No es tu turno todavía");
                     }
                 }
             });
