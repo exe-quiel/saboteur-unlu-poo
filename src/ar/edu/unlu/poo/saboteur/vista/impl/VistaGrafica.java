@@ -131,6 +131,13 @@ public class VistaGrafica implements IVista {
                 }
             }
 
+            if ("Jugador-1".equals(nombreJugador)) {
+                esMiTurno = true;
+                tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else {
+                tablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+
             // panelDeJuego.add(tablero);
 
             panelPrincipal.add(tablero, BorderLayout.CENTER);
@@ -177,12 +184,7 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void iniciar() {
-        if ("Jugador-1".equals(nombreJugador)) {
-            esMiTurno = true;
-            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else {
-            tablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        }
+        
     }
 
     @Override
