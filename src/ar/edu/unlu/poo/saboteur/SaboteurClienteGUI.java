@@ -35,10 +35,11 @@ public class SaboteurClienteGUI {
         }
         String nombreJugador = null;
         try {
-            nombreJugador = controladorJuego.generarNombreJugador();
+            nombreJugador = controladorJuego.generarIdJugador();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+        System.out.println("Iniciando cliente [" + nombreJugador + "] en puerto [" + CLIENT_PORT + "]");
         vista = new VistaGrafica(controladorJuego, nombreJugador);
         System.out.println("Tu nombre: " + nombreJugador);
         vista.iniciar();
@@ -46,14 +47,16 @@ public class SaboteurClienteGUI {
 
     /**
      * Esto es para no tener que cambiar el puerto a mano
-     * cada vez que ejecuto el main de esta clase
+     * cada vez que ejecuto el {@code main} de esta clase
+     * 
+     * @see SaboteurServidor#reiniciarArchivoPuertoCliente
      * 
      * @return puerto para que use el cliente
      * @throws IOException si falla la lectura del archivo
      */
     private static int obtenerPuertoClienteYActualizarArchivo() throws IOException {
         Path path = Paths.get("default_port.txt");
-        int clientPort = Integer.valueOf(Files.readAllLines(path).get(0));
+        Integer clientPort = Integer.valueOf(Files.readAllLines(path).get(0));
         Files.write(path, String.valueOf(clientPort + 1).getBytes(), StandardOpenOption.WRITE);
         return clientPort;
     }

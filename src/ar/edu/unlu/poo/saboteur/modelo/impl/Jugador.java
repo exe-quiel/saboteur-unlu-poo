@@ -14,18 +14,18 @@ public class Jugador implements Serializable {
      * 
      */
     private static final long serialVersionUID = 3336584393172378611L;
-    private final String nombre;
+    private final String id;
     private List<CartaDeJuego> mano;
     private List<CartaDePuntos> puntaje;
     private List<CartaDeAccion> herramientasRotas;
 
-    public Jugador(String nombre) {
+    public Jugador(String id) {
         super();
-        this.nombre = nombre;
+        this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getId() {
+        return id;
     }
 
     public int calcularPuntaje() {

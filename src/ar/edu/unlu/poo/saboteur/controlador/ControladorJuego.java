@@ -35,15 +35,15 @@ public class ControladorJuego implements IControladorRemoto {
             case JUGADOR_SALE:
                 break;
             case USA_CARTA:
-                vista.mostrarGrilla(evento.getX(), evento.getY());
-                vista.cambiarTurno(evento.getJugadorOrigen());
+                vista.mostrarGrilla(evento.getIdCarta(), evento.getX(), evento.getY());
+                vista.cambiarTurno(evento.getIdJugadorOrigen());
                 break;
             case NUEVO_MENSAJE:
                 vista.mostrarMensajes(this.juego.getMensajes());
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
-                vista.cambiarTurno(evento.getJugadorOrigen());
+                vista.cambiarTurno(evento.getIdJugadorOrigen());
             default:
                 break;
             }
@@ -55,8 +55,12 @@ public class ControladorJuego implements IControladorRemoto {
         this.juego = (IJuego) arg0;
     }
 
-    public void jugarCarta(byte x, byte y) throws RemoteException {
-        this.juego.jugarCarta(x, y);
+    public void jugarCarta(byte idCarta, byte x, byte y) throws RemoteException {
+        this.juego.jugarCarta(idCarta, x, y);
+    }
+
+    public void jugarCarta(String idJugadorDestino, byte idCarta) throws RemoteException {
+        this.juego.jugarCarta(idJugadorDestino, idCarta);
     }
 
     public void enviarMensaje(Mensaje mensaje) {
@@ -67,8 +71,8 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public String generarNombreJugador() throws RemoteException {
-        return this.juego.generarNombreJugador();
+    public String generarIdJugador() throws RemoteException {
+        return this.juego.generarIdJugador();
     }
 
     public List<String> obtenerNombresJugadores() throws RemoteException {

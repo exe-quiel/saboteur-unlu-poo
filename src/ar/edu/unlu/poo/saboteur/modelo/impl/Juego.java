@@ -14,7 +14,7 @@ import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 public class Juego extends ObservableRemoto implements IJuego {
 
     private int[][] grilla = new int[6][9];
-    private byte indiceNombreJugador = 1;
+    private byte indiceIdJugador = 1;
     private byte indiceJugadorTurno = 0;
     private List<Jugador> jugadores = new LinkedList<>();
     private List<Mensaje> mensajes;
@@ -37,18 +37,28 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public void jugarCarta(byte x, byte y) {
+    public void jugarCarta(byte idCarta, byte x, byte y) {
         System.out.println(String.format("(%s,%s)", x, y));
-        this.grilla[y][x] = 1;
+        if (this.grilla[y][x] != 1) {
+            this.grilla[y][x] = 1;
+            try {
+                incrementarTurno();
+                this.notificarObservadores(new Evento(jugadores.get(indiceJugadorTurno).getId(), idCarta, x, y));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void jugarCarta(String idJugadorDestino, byte idCarta) throws RemoteException {
         try {
             incrementarTurno();
-            this.notificarObservadores(new Evento(TipoEvento.USA_CARTA, jugadores.get(indiceJugadorTurno).getNombre(), x, y));
+            this.notificarObservadores(new Evento(jugadores.get(indiceJugadorTurno).getId(), idJugadorDestino, idCarta));
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
-
-
 
     @Override
     public void enviarMensaje(Mensaje mensaje) throws RemoteException {
@@ -56,7 +66,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.mensajes.add(mensaje);
         try {
             //this.notificarObservadores(new Evento(TipoEvento.NUEVO_MENSAJE));
-            Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE, jugadores.get(indiceJugadorTurno).getNombre());
+            Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE, jugadores.get(indiceJugadorTurno).getId());
             this.notificarObservadores(evento);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -69,12 +79,12 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public String generarNombreJugador() throws RemoteException {
-        String nombreJugador = "Jugador-" + indiceNombreJugador;
+    public String generarIdJugador() throws RemoteException {
+        String idJugador = "Jugador-" + indiceIdJugador;
         //this.notificarObservadores(new Evento(TipoEvento.NUEVO_JUGADOR));
-        jugadores.add(new Jugador(nombreJugador));
-        indiceNombreJugador++;
-        return nombreJugador;
+        jugadores.add(new Jugador(idJugador));
+        indiceIdJugador++;
+        return idJugador;
     }
 
     private void incrementarTurno() {
@@ -88,7 +98,7 @@ public class Juego extends ObservableRemoto implements IJuego {
     public List<String> getDatosJugadores() throws RemoteException {
         return jugadores
                 .stream()
-                .map(jugador -> jugador.getNombre())
+                .map(jugador -> jugador.getId())
                 .collect(Collectors.toList());
     }
 

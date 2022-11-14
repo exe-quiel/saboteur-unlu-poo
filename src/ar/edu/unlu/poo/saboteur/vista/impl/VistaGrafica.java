@@ -39,16 +39,16 @@ import ar.edu.unlu.poo.saboteur.vista.IVista;
 
 public class VistaGrafica implements IVista {
 
-    private String nombreJugador;
+    private String idJugador;
     private DefaultListModel<String> historialDeChat;
-    private DefaultListModel<String> jugadores = new DefaultListModel<>();;
+    private DefaultListModel<String> jugadores = new DefaultListModel<>();
     private Jugador jugador;
     private JButton botonEnviar;
     private JComponent tablero;
     private boolean esMiTurno;
 
-    public VistaGrafica(ControladorJuego controladorJuego, String nombreJugador) {
-        this.nombreJugador = nombreJugador;
+    public VistaGrafica(ControladorJuego controladorJuego, String idJugador) {
+        this.idJugador = idJugador;
 
         controladorJuego.setVista(this);
 
@@ -58,23 +58,25 @@ public class VistaGrafica implements IVista {
             //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             // frame.setUndecorated(true);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setTitle("Saboteur - " + this.nombreJugador);
+            frame.setTitle("Saboteur - " + this.idJugador);
 
             historialDeChat = new DefaultListModel<>();
             JList<String> historial = new JList<>(historialDeChat);
 
             JTextField textoDelUsuario = new JTextField();
             textoDelUsuario.setSize(500, 20);
+            textoDelUsuario.setText("Escribir mensaje");
 
             botonEnviar = new JButton("Enviar");
 
             // botonEnviar.setEnabled(nombreJugador.endsWith("-1"));
 
             botonEnviar.addActionListener(event -> {
-                if (textoDelUsuario.getText() != null && !textoDelUsuario.getText().isEmpty()) {
-                    controladorJuego.enviarMensaje(new Mensaje(this.nombreJugador, textoDelUsuario.getText()));
+                String text = textoDelUsuario.getText();
+                if (text != null && !text.isEmpty()) {
+                    controladorJuego.enviarMensaje(new Mensaje(this.idJugador, text));
                 }
-                textoDelUsuario.setText("");
+                textoDelUsuario.setText("Escribir mensaje");
             });
 
             textoDelUsuario.addKeyListener(new KeyListener() {
@@ -114,7 +116,7 @@ public class VistaGrafica implements IVista {
             botonCoord.addActionListener(evento -> {
                 try {
                     Random random = new Random();
-                    controladorJuego.jugarCarta((byte) random.nextInt(5), (byte) random.nextInt(9));
+                    controladorJuego.jugarCarta((byte) random.nextInt(50), (byte) random.nextInt(5), (byte) random.nextInt(9));
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
                 }
@@ -131,7 +133,7 @@ public class VistaGrafica implements IVista {
                 }
             }
 
-            if ("Jugador-1".equals(nombreJugador)) {
+            if ("Jugador-1".equals(this.idJugador)) {
                 esMiTurno = true;
                 tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             } else {
@@ -203,7 +205,7 @@ public class VistaGrafica implements IVista {
     @Override
     public void cambiarTurno(String idJugador) {
         System.out.println("Nuevo turno: [" + idJugador + "]");
-        if (idJugador.equals(nombreJugador)) {
+        if (idJugador.equals(this.idJugador)) {
             esMiTurno = true;
             tablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else {
@@ -212,11 +214,11 @@ public class VistaGrafica implements IVista {
     }
 
     public String getNombreJugador() {
-        return nombreJugador;
+        return this.idJugador;
     }
 
     @Override
-    public void mostrarGrilla(byte x, byte y) {
+    public void mostrarGrilla(byte idCarta, byte x, byte y) {
         Arrays.asList(tablero.getComponents()).stream()
             .filter(carta -> {
                     if (carta instanceof LabelCarta) {
@@ -255,11 +257,12 @@ public class VistaGrafica implements IVista {
 
                 @Override
                 public void mouseClicked(MouseEvent event) {
-                    System.out.println("[" + nombreJugador + "] -> " + esMiTurno);
+                    System.out.println("[" + idJugador + "] -> " + esMiTurno);
                     boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
                     if (esMiTurno) {
                         try {
-                            controlador.jugarCarta(posicionX, posicionY);
+                            byte idCarta = 0;
+                            controlador.jugarCarta(idCarta, posicionX, posicionY);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         }

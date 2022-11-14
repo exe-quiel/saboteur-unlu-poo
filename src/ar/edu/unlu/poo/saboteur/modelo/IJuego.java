@@ -8,7 +8,9 @@ import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 public interface IJuego extends IObservableRemoto {
 
-    public void jugarCarta(byte x, byte y) throws RemoteException;
+    public void jugarCarta(byte idCarta, byte x, byte y) throws RemoteException;
+
+    public void jugarCarta(String idJugadorDestino, byte idCarta) throws RemoteException;
 
     public void reestablecerGrilla() throws RemoteException;
 
@@ -16,7 +18,7 @@ public interface IJuego extends IObservableRemoto {
 
     public List<Mensaje> getMensajes() throws RemoteException;
 
-    public String generarNombreJugador() throws RemoteException;
+    public String generarIdJugador() throws RemoteException;
 
     public List<String> getDatosJugadores() throws RemoteException;
 

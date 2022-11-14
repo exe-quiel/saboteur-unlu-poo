@@ -19,6 +19,7 @@ public class SaboteurServidor {
 
     public static void main(String[] args) throws IOException {
         reiniciarArchivoPuertoCliente();
+
         System.out.println(args);
         System.out.println("Iniciando servidor RMI");
         IJuego juego = new Juego();
@@ -31,8 +32,16 @@ public class SaboteurServidor {
         System.out.println("Servidor iniciado");
     }
 
+    /**
+     * Reinicia el puerto de los clientes a 9990. Cada cliente luego incrementa este valor
+     * para no tener que cambiarlo manualmente.
+     * 
+     * @see SaboteurClienteGUI#obtenerPuertoClienteYActualizarArchivo
+     * 
+     * @throws IOException si falla la escritura del archivo
+     */
     private static void reiniciarArchivoPuertoCliente() throws IOException {
         Path path = Paths.get("default_port.txt");
-        Files.write(path, "9990".getBytes(), StandardOpenOption.WRITE);
+        Files.write(path, "9990".getBytes(), StandardOpenOption.CREATE);
     }
 }
