@@ -20,6 +20,8 @@ public class GeneradorDeImagenes {
 
     private static GeneradorDeImagenes instance;
 
+    private final byte FACTOR_DE_ESCALA = 3;
+
     private BufferedImage imagenSecciones;
     private BufferedImage bloqueAbiertoVertical;
     private BufferedImage bloqueAbiertoHorizontal;
@@ -91,51 +93,51 @@ public class GeneradorDeImagenes {
      * @return
      */
     public BufferedImage generarImagen(Entrada[] entradas, boolean centroBloqueado) {
-        BufferedImage imagenResultante = new BufferedImage(11 * 3 * 3, 16 * 3 * 3, imagenSecciones.getType());
+        BufferedImage imagenResultante = new BufferedImage(11 * 3 * FACTOR_DE_ESCALA, 16 * 3 * FACTOR_DE_ESCALA, imagenSecciones.getType());
         Graphics graphics = imagenResultante.getGraphics();
 
         // Esquina superior izquierda
         graphics.drawImage(bloqueCerrado, 0, 0, null);
 
         // Esquina superior derecha
-        graphics.drawImage(bloqueCerrado, imagenResultante.getWidth() - (11 * 3), 0, null);
+        graphics.drawImage(bloqueCerrado, imagenResultante.getWidth() - (11 * FACTOR_DE_ESCALA), 0, null);
 
         // Esquina inferior izquierda
-        graphics.drawImage(bloqueCerrado, 0, imagenResultante.getHeight() - (16 * 3), null);
+        graphics.drawImage(bloqueCerrado, 0, imagenResultante.getHeight() - (16 * FACTOR_DE_ESCALA), null);
 
         // Esquina inferior derecha
-        graphics.drawImage(bloqueCerrado, imagenResultante.getWidth() - (11 * 3), imagenResultante.getHeight() - (16 * 3), null);
+        graphics.drawImage(bloqueCerrado, imagenResultante.getWidth() - (11 * FACTOR_DE_ESCALA), imagenResultante.getHeight() - (16 * FACTOR_DE_ESCALA), null);
 
         List<Entrada> entradasLista = Arrays.asList(entradas);
 
         if (entradasLista.contains(Entrada.NORTE)) {
-            graphics.drawImage(bloqueAbiertoVertical, 11 * 3, 0, null);
+            graphics.drawImage(bloqueAbiertoVertical, 11 * FACTOR_DE_ESCALA, 0, null);
         } else {
-            graphics.drawImage(bloqueCerrado, 11 * 3, 0, null);
+            graphics.drawImage(bloqueCerrado, 11 * FACTOR_DE_ESCALA, 0, null);
         }
 
         if (entradasLista.contains(Entrada.SUR)) {
-            graphics.drawImage(bloqueAbiertoVertical, 11 * 3, 32 * 3, null);
+            graphics.drawImage(bloqueAbiertoVertical, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         } else {
-            graphics.drawImage(bloqueCerrado, 11 * 3, 32 * 3, null);
+            graphics.drawImage(bloqueCerrado, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         }
 
         if (entradasLista.contains(Entrada.ESTE)) {
-            graphics.drawImage(bloqueAbiertoHorizontal, (33 - 11) * 3, 16 * 3, null);
+            graphics.drawImage(bloqueAbiertoHorizontal, (33 - 11) * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         } else {
-            graphics.drawImage(bloqueCerrado, (33 - 11) * 3, 16 * 3, null);
+            graphics.drawImage(bloqueCerrado, (33 - 11) * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         }
 
         if (entradasLista.contains(Entrada.OESTE)) {
-            graphics.drawImage(bloqueAbiertoHorizontal, 0, 16 * 3, null);
+            graphics.drawImage(bloqueAbiertoHorizontal, 0, 16 * FACTOR_DE_ESCALA, null);
         } else {
-            graphics.drawImage(bloqueCerrado, 0, 16 * 3, null);
+            graphics.drawImage(bloqueCerrado, 0, 16 * FACTOR_DE_ESCALA, null);
         }
 
         if (centroBloqueado) {
-            graphics.drawImage(bloqueCerrado, 11 * 3, 16 * 3, null);
+            graphics.drawImage(bloqueCerrado, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         } else {
-            graphics.drawImage(bloqueAbierto, 11 * 3, 16 * 3, null);
+            graphics.drawImage(bloqueAbierto, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
         }
 
         return imagenResultante;
