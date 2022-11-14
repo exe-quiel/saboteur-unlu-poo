@@ -22,6 +22,7 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -33,11 +34,15 @@ import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Jugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
+import ar.edu.unlu.poo.saboteur.util.GeneradorDeImagenes;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 
 public class VistaGrafica implements IVista {
+
+    private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
 
     private String idJugador;
     private DefaultListModel<String> historialDeChat;
@@ -129,6 +134,7 @@ public class VistaGrafica implements IVista {
             for (byte y = 0; y < 5; y++) {
                 for (byte x = 0; x < 9; x++) {
                     LabelCarta label = new LabelCarta(null, x, y, controladorJuego);
+                    label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
                     tablero.add(label);
                 }
             }
@@ -231,7 +237,9 @@ public class VistaGrafica implements IVista {
             .ifPresent(carta -> {
                 if (carta instanceof LabelCarta) {
                     LabelCarta labelCarta = (LabelCarta) carta;
-                    labelCarta.setText(labelCarta.getText() + " CLICKED");
+                    labelCarta.setText("");
+                    Entrada[] entradas = new Entrada[] { Entrada.ESTE, Entrada.SUR };
+                    labelCarta.setIcon(new ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
                 }
             });
     }
