@@ -238,8 +238,8 @@ public class VistaGrafica implements IVista {
                 if (carta instanceof LabelCarta) {
                     LabelCarta labelCarta = (LabelCarta) carta;
                     labelCarta.setText("");
-                    Entrada[] entradas = new Entrada[] { Entrada.ESTE, Entrada.SUR };
-                    labelCarta.setIcon(new ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), true)));
+                    Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR };
+                    labelCarta.setIcon(new ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
                 }
             });
     }

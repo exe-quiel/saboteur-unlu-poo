@@ -117,9 +117,9 @@ public class GeneradorDeImagenes {
         }
 
         if (entradasLista.contains(Entrada.SUR)) {
-            graphics.drawImage(bloqueAbiertoVertical, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
+            graphics.drawImage(bloqueAbiertoVertical, 11 * FACTOR_DE_ESCALA, 32 * FACTOR_DE_ESCALA, null);
         } else {
-            graphics.drawImage(bloqueCerrado, 11 * FACTOR_DE_ESCALA, 16 * FACTOR_DE_ESCALA, null);
+            graphics.drawImage(bloqueCerrado, 11 * FACTOR_DE_ESCALA, 32 * FACTOR_DE_ESCALA, null);
         }
 
         if (entradasLista.contains(Entrada.ESTE)) {
