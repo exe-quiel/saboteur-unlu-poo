@@ -7,6 +7,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 import ar.edu.unlu.poo.saboteur.vista.impl.VistaGrafica;
@@ -24,6 +27,13 @@ public class SaboteurClienteGUI {
 
     public static void main(String[] args) throws NumberFormatException, IOException {
         ControladorJuego controladorJuego = new ControladorJuego();
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException e1) {
+            e1.printStackTrace();
+        }
 
         final int CLIENT_PORT = obtenerPuertoClienteYActualizarArchivo();
         Cliente cliente = new Cliente(DEFAULT_CLIENT_HOSTNAME, CLIENT_PORT, DEFAULT_SERVER_HOSTNAME,

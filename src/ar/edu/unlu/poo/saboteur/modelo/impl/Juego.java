@@ -2,8 +2,10 @@ package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
@@ -18,6 +20,8 @@ public class Juego extends ObservableRemoto implements IJuego {
     private byte indiceJugadorTurno = 0;
     private List<Jugador> jugadores = new LinkedList<>();
     private List<Mensaje> mensajes;
+
+    private boolean partidaEmpezo;
 
     public Juego() {
         super();
@@ -38,7 +42,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void jugarCarta(byte idCarta, byte x, byte y) {
-        System.out.println(String.format("(%s,%s)", x, y));
+        System.out.println(String.format("Carta %s en (%s,%s)", idCarta, x, y));
         if (this.grilla[y][x] != 1) {
             this.grilla[y][x] = 1;
             try {
@@ -105,5 +109,31 @@ public class Juego extends ObservableRemoto implements IJuego {
     @Override
     public int[][] getGrilla() throws RemoteException {
         return grilla;
+    }
+
+    @Override
+    public void marcarListo(String idJugador) throws RemoteException {
+        jugadores
+            .stream()
+            .filter(jugador -> jugador.getId().equals(idJugador))
+            .findFirst()
+            .ifPresent(Jugador::marcarListo);
+        System.out.println("[" + idJugador + "] está listo");
+
+        if (jugadores.stream().allMatch(Jugador::getListo)) {
+            System.out.println("Todos listos");
+            this.partidaEmpezo = true;
+            for (Jugador jugador : jugadores) {
+                Random random = new Random();
+                List<Byte> mano = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {
+                    mano.add((byte) random.nextInt(50));
+                }
+                System.out.println("Jugador [" + idJugador + "] mano " + mano);
+                //jugador.setMano(mano);
+                Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugador.getId(), mano);
+                this.notificarObservadores(evento);
+            }
+        }
     }
 }

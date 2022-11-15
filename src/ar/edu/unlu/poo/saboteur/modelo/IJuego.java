@@ -23,4 +23,6 @@ public interface IJuego extends IObservableRemoto {
     public List<String> getDatosJugadores() throws RemoteException;
 
     public int[][] getGrilla() throws RemoteException;
+
+    public void marcarListo(String idJugador) throws RemoteException;
 }

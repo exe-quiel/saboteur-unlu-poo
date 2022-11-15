@@ -44,6 +44,10 @@ public class ControladorJuego implements IControladorRemoto {
                 break;
             case CAMBIO_TURNO:
                 vista.cambiarTurno(evento.getIdJugadorOrigen());
+                break;
+            case INICIA_JUEGO:
+                vista.iniciarJuego(evento.getIdJugadorDestino(), evento.getMano());
+                break;
             default:
                 break;
             }
@@ -78,5 +82,9 @@ public class ControladorJuego implements IControladorRemoto {
     public List<String> obtenerNombresJugadores() throws RemoteException {
         return this.juego.getDatosJugadores();
         
+    }
+
+    public void marcarListo(String idJugador) throws RemoteException {
+        juego.marcarListo(idJugador);
     }
 }

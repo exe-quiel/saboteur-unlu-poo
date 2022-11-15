@@ -18,6 +18,7 @@ public class Jugador implements Serializable {
     private List<CartaDeJuego> mano;
     private List<CartaDePuntos> puntaje;
     private List<CartaDeAccion> herramientasRotas;
+    private boolean listo;
 
     public Jugador(String id) {
         super();
@@ -81,5 +82,17 @@ public class Jugador implements Serializable {
     public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
         this.mano.clear();
         this.mano.addAll(cartasDeJuego);
+    }
+
+    public void marcarListo() {
+        this.listo = true;
+    }
+
+    public boolean getListo() {
+        return listo;
+    }
+
+    public void setMano(byte[] mano) {
+        //this.mano = mano;
     }
 }

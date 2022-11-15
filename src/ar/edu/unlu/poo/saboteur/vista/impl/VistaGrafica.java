@@ -1,6 +1,8 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -18,11 +20,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -30,11 +31,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
-import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Jugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.util.GeneradorDeImagenes;
@@ -45,12 +46,21 @@ public class VistaGrafica implements IVista {
     private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
 
     private String idJugador;
+    private List<Byte> mano;
+
     private DefaultListModel<String> historialDeChat;
     private DefaultListModel<String> jugadores = new DefaultListModel<>();
     private Jugador jugador;
     private JButton botonEnviar;
+    private JButton botonListo;
     private JComponent tablero;
     private boolean esMiTurno;
+    private byte cartaSeleccionada = -1;
+
+    private JPanel southPanel;
+
+    //final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
+    final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
 
     public VistaGrafica(ControladorJuego controladorJuego, String idJugador) {
         this.idJugador = idJugador;
@@ -60,7 +70,7 @@ public class VistaGrafica implements IVista {
         EventQueue.invokeLater(() -> {
             JFrame frame = new JFrame();
             frame.setSize(1280, 720);
-            //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             // frame.setUndecorated(true);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setTitle("Saboteur - " + this.idJugador);
@@ -105,6 +115,16 @@ public class VistaGrafica implements IVista {
                 }
             });
 
+            botonListo = new JButton("Listo");
+            botonListo.addActionListener(evento -> {
+                try {
+                    botonListo.setEnabled(false);
+                    controladorJuego.marcarListo(idJugador);
+                } catch (RemoteException e1) {
+                    e1.printStackTrace();
+                }
+            });
+
             Container panelPrincipal = frame.getContentPane();
             panelPrincipal.setLayout(new BorderLayout());
 
@@ -117,15 +137,13 @@ public class VistaGrafica implements IVista {
              * (RemoteException e1) { e1.printStackTrace(); } JList<String> listaDeJugadores
              * = new JList<>(this.jugadores); panelDeJuego.add(listaDeJugadores);
              */
-            JButton botonCoord = new JButton("Mandar coordenada");
-            botonCoord.addActionListener(evento -> {
-                try {
-                    Random random = new Random();
-                    controladorJuego.jugarCarta((byte) random.nextInt(50), (byte) random.nextInt(5), (byte) random.nextInt(9));
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-            });
+            /*
+             * JButton botonCoord = new JButton("Mandar coordenada");
+             * botonCoord.addActionListener(evento -> { try { Random random = new Random();
+             * controladorJuego.jugarCarta((byte) random.nextInt(50), (byte)
+             * random.nextInt(5), (byte) random.nextInt(9)); } catch (RemoteException e1) {
+             * e1.printStackTrace(); } });
+             */
             // panelDeJuego.add(botonCoord);
 
             // tablero = new Tablero();
@@ -134,6 +152,7 @@ public class VistaGrafica implements IVista {
             for (byte y = 0; y < 5; y++) {
                 for (byte x = 0; x < 9; x++) {
                     LabelCarta label = new LabelCarta(null, x, y, controladorJuego);
+                    label.setHorizontalAlignment(JLabel.CENTER);
                     label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
                     tablero.add(label);
                 }
@@ -180,9 +199,11 @@ public class VistaGrafica implements IVista {
 
             panelPrincipal.add(panelChat, BorderLayout.EAST);
 
-            JPanel southPanel = new JPanel();
+            southPanel = new JPanel();
+            southPanel.setLayout(new GridLayout(1, 10));
             JLabel jLabel = new JLabel("cartas");
             southPanel.add(jLabel);
+            southPanel.add(botonListo);
             southPanel.setPreferredSize(new Dimension(0, 300));
             // placeholder.setSize(500, 200);
             panelPrincipal.add(southPanel, BorderLayout.SOUTH);
@@ -192,7 +213,7 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void iniciar() {
-        
+
     }
 
     @Override
@@ -225,23 +246,22 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void mostrarGrilla(byte idCarta, byte x, byte y) {
-        Arrays.asList(tablero.getComponents()).stream()
-            .filter(carta -> {
-                    if (carta instanceof LabelCarta) {
-                        LabelCarta labelCarta = (LabelCarta) carta;
-                        return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
-                    }
-                    return false;
-            })
-            .findFirst()
-            .ifPresent(carta -> {
-                if (carta instanceof LabelCarta) {
-                    LabelCarta labelCarta = (LabelCarta) carta;
-                    labelCarta.setText("");
-                    Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR };
-                    labelCarta.setIcon(new ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
-                }
-            });
+        Arrays.asList(tablero.getComponents()).stream().filter(carta -> {
+            if (carta instanceof LabelCarta) {
+                LabelCarta labelCarta = (LabelCarta) carta;
+                return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
+            }
+            return false;
+        }).findFirst().ifPresent(carta -> {
+            if (carta instanceof LabelCarta) {
+                LabelCarta labelCarta = (LabelCarta) carta;
+                labelCarta.setText(String.valueOf(idCarta));
+                // Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR
+                // };
+                // labelCarta.setIcon(new
+                // ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
+            }
+        });
     }
 
     public class LabelCarta extends JLabel {
@@ -267,16 +287,44 @@ public class VistaGrafica implements IVista {
                 public void mouseClicked(MouseEvent event) {
                     System.out.println("[" + idJugador + "] -> " + esMiTurno);
                     boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
-                    if (esMiTurno) {
+                    boolean estaLibre = ((LabelCarta) event.getComponent()).getText().contains("(");
+                    if (esMiTurno && cartaSeleccionada != -1 && estaLibre) {
                         try {
-                            byte idCarta = 0;
-                            controlador.jugarCarta(idCarta, posicionX, posicionY);
+                            controlador.jugarCarta(cartaSeleccionada, posicionX, posicionY);
+                            Component componentToRemove = null;
+                            for (Component component : southPanel.getComponents()) {
+                                if (component instanceof JLabel) {
+                                    String text = ((JLabel) component).getText();
+                                    System.out.println("CARTA " + text);
+                                    try {
+                                        byte idCarta = Byte.parseByte(text);
+                                        if (idCarta == cartaSeleccionada) {
+                                            componentToRemove = component;
+                                        }
+                                    } catch (NumberFormatException e) {
+                                    }
+                                }
+                            }
+                            if (componentToRemove != null) {
+                                southPanel.remove(componentToRemove);
+                            }
+                            cartaSeleccionada = -1;
                         } catch (RemoteException e) {
                             e.printStackTrace();
                         }
                     } else {
-                        System.out.println("No es tu turno todavía");
+                        System.out.println("No es tu turno todavía, tenés que seleccionar una carta primero o no está libre");
                     }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(LABEL_BORDER);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(null);
                 }
             });
         }
@@ -368,5 +416,51 @@ public class VistaGrafica implements IVista {
 
         }
 
+    }
+
+    @Override
+    public void iniciarJuego(String idJugadorDestino, List<Byte> mano) {
+        if (idJugadorDestino.equals(idJugador)) {
+            botonListo.setEnabled(false);
+            this.mano = mano;
+            southPanel.remove(botonListo);
+            // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
+            southPanel.revalidate();
+            southPanel.repaint();
+
+            this.mostarMano();
+        }
+    }
+
+    private void mostarMano() {
+        for (Byte carta : mano) {
+            JLabel cartaLabel = new JLabel(carta.toString());
+            cartaLabel.setHorizontalAlignment(JLabel.CENTER);
+            cartaLabel.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent event) {
+                    boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
+                    if (esMiTurno) {
+                        String text = ((JLabel) event.getComponent()).getText();
+                        byte idCarta = Byte.parseByte(text);
+                        cartaSeleccionada = idCarta;
+                    } else {
+                        System.out.println("No es tu turno todavía");
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(LABEL_BORDER);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(null);
+                }
+            });
+            southPanel.add(cartaLabel);
+        }
     }
 }

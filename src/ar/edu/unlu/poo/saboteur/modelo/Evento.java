@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.saboteur.modelo;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Evento implements Serializable {
 
@@ -14,6 +15,7 @@ public class Evento implements Serializable {
     private byte y;
     private TipoEvento tipoEvento;
     private byte idCarta;
+    private List<Byte> mano;
 
     public Evento(TipoEvento tipoEvento) {
         super();
@@ -24,6 +26,13 @@ public class Evento implements Serializable {
         super();
         this.tipoEvento = tipoEvento;
         this.idJugadorOrigen = idJugadorOrigen;
+    }
+
+    public Evento(TipoEvento tipoEvento, String idJugadorDestino, List<Byte> mano) {
+        super();
+        this.tipoEvento = tipoEvento;
+        this.idJugadorDestino = idJugadorDestino;
+        this.mano = mano;
     }
 
     /**
@@ -100,5 +109,9 @@ public class Evento implements Serializable {
 
     public byte getIdCarta() {
         return idCarta;
+    }
+
+    public List<Byte> getMano() {
+        return mano;
     }
 }

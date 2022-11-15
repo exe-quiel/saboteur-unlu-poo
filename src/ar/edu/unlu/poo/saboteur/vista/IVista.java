@@ -15,4 +15,6 @@ public interface IVista {
     public void actualizarJugadores(List<String> jugadores);
 
     public void mostrarGrilla(byte idCarta, byte x, byte y);
+
+    public void iniciarJuego(String idJugadorDestino, List<Byte> mano);
 }
