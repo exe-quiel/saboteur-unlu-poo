@@ -2,8 +2,6 @@ package ar.edu.unlu.poo.saboteur.modelo;
 
 import java.util.Arrays;
 
-import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
-
 public enum TipoCartaAccion {
 
     LAMPARA_ROTA,
