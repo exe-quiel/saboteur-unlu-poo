@@ -15,7 +15,8 @@ public class Evento implements Serializable {
     private byte y;
     private TipoEvento tipoEvento;
     private byte idCarta;
-    private List<Byte> mano;
+    private List<? extends IJugadorBase> jugadores;
+    
 
     public Evento(TipoEvento tipoEvento) {
         super();
@@ -28,11 +29,10 @@ public class Evento implements Serializable {
         this.idJugadorOrigen = idJugadorOrigen;
     }
 
-    public Evento(TipoEvento tipoEvento, String idJugadorDestino, List<Byte> mano) {
+    public Evento(TipoEvento tipoEvento, List<? extends IJugadorBase> jugadores) {
         super();
         this.tipoEvento = tipoEvento;
-        this.idJugadorDestino = idJugadorDestino;
-        this.mano = mano;
+        this.jugadores = jugadores;
     }
 
     /**
@@ -111,7 +111,15 @@ public class Evento implements Serializable {
         return idCarta;
     }
 
-    public List<Byte> getMano() {
-        return mano;
+    public List<? extends IJugadorBase> getJugadores() {
+        return jugadores;
+    }
+
+    public IJugador obtenerJugador(String idJugador) {
+        return (IJugador) jugadores
+                .stream()
+                .filter(jugador -> idJugador.equals(jugador.getId()))
+                .findFirst()
+                .orElse(null);
     }
 }

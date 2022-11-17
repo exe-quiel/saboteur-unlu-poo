@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -14,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.TextEvent;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -35,35 +37,45 @@ import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.Evento;
+import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.IJugadorBase;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Jugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.util.GeneradorDeImagenes;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
+import javafx.scene.text.Text;
 
 public class VistaGrafica implements IVista {
 
     private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
+
+    private ControladorJuego controladorJuego;
 
     private String idJugador;
     private List<Byte> mano;
 
     private DefaultListModel<String> historialDeChat;
     private DefaultListModel<String> jugadores = new DefaultListModel<>();
-    private Jugador jugador;
+    private IJugador jugador;
     private JButton botonEnviar;
     private JButton botonListo;
     private JComponent tablero;
     private boolean esMiTurno;
     private byte cartaSeleccionada = -1;
+    private byte[] herramientasRotas;
 
     private JPanel southPanel;
 
-    //final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
-    final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
+    final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
+    //final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
+
+    private JPanel westPanel;
 
     public VistaGrafica(ControladorJuego controladorJuego, String idJugador) {
         this.idJugador = idJugador;
 
+        this.controladorJuego = controladorJuego;
         controladorJuego.setVista(this);
 
         EventQueue.invokeLater(() -> {
@@ -168,9 +180,10 @@ public class VistaGrafica implements IVista {
 
             panelPrincipal.add(tablero, BorderLayout.CENTER);
 
-            JPanel westPanel = new JPanel();
-            westPanel.setLayout(new GridLayout(4, 1));
-            westPanel.setPreferredSize(new Dimension(300, 0));
+            westPanel = new JPanel();
+            westPanel.setLayout(new GridLayout(10, 1));
+            westPanel.setPreferredSize(new Dimension(150, 0));
+            /*
             westPanel.add(new JLabel("Jugador1"));
             westPanel.add(new JLabel("Jugador2"));
             westPanel.add(new JLabel("Jugador3"));
@@ -181,6 +194,7 @@ public class VistaGrafica implements IVista {
             westPanel.add(new JLabel("Jugador8"));
             westPanel.add(new JLabel("Jugador9"));
             westPanel.add(new JLabel("Jugador10"));
+            */
 
             panelPrincipal.add(westPanel, BorderLayout.WEST);
 
@@ -194,7 +208,7 @@ public class VistaGrafica implements IVista {
             panelInferiorChat.add(textoDelUsuario);
             panelInferiorChat.add(botonEnviar);
             panelChat.add(panelInferiorChat);
-            panelChat.setPreferredSize(new Dimension(300, 0));
+            panelChat.setPreferredSize(new Dimension(200, 0));
 
             panelPrincipal.add(panelChat, BorderLayout.EAST);
 
@@ -203,7 +217,7 @@ public class VistaGrafica implements IVista {
             JLabel jLabel = new JLabel("cartas");
             southPanel.add(jLabel);
             southPanel.add(botonListo);
-            southPanel.setPreferredSize(new Dimension(0, 300));
+            southPanel.setPreferredSize(new Dimension(0, 200));
             // placeholder.setSize(500, 200);
             panelPrincipal.add(southPanel, BorderLayout.SOUTH);
             frame.setVisible(true);
@@ -418,21 +432,64 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void iniciarJuego(String idJugadorDestino, List<Byte> mano) {
-        if (idJugadorDestino.equals(idJugador)) {
-            botonListo.setEnabled(false);
-            this.mano = mano;
-            southPanel.remove(botonListo);
-            // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
-            southPanel.revalidate();
-            southPanel.repaint();
+    public void iniciarJuego(Evento evento) {
+        botonListo.setEnabled(false);
+        this.jugador = evento.obtenerJugador(idJugador);
+        southPanel.remove(botonListo);
+        // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
+        southPanel.revalidate();
+        southPanel.repaint();
 
-            this.mostarMano();
+        this.mostarMano();
+
+        this.cargarListaDeJugadores(evento.getJugadores());
+    }
+
+    private void cargarListaDeJugadores(List<? extends IJugadorBase> jugadores) {
+        for (IJugadorBase jugador : jugadores) {
+            StringBuilder sBuilder = new StringBuilder(jugador.getId())
+                .append("|");
+            for (Byte cartaHerramientaRota : jugador.getHerramientasRotas()) {
+                sBuilder.append(cartaHerramientaRota);
+                sBuilder.append("-");
+            }
+            JLabel labelJugador = new JLabel(sBuilder.toString());
+            labelJugador.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent event) {
+                    boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
+                    if (esMiTurno && cartaSeleccionada != -1) {
+                        JLabel carta = (JLabel) event.getComponent();
+                        String text = carta.getText();
+                        //carta.setForeground(Color.WHITE);
+                        //carta.setBackground(Color.BLACK);
+                        try {
+                            controladorJuego.aplicarCartaDeHerramienta(cartaSeleccionada, text.substring(0, text.indexOf("|")));
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("No es tu turno todavía");
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setForeground(Color.BLACK);
+                }
+            });
+            westPanel.add(labelJugador);
         }
     }
 
     private void mostarMano() {
-        for (Byte carta : mano) {
+        for (Byte carta : this.jugador.getMano()) {
             JLabel cartaLabel = new JLabel(carta.toString());
             cartaLabel.setHorizontalAlignment(JLabel.CENTER);
             cartaLabel.addMouseListener(new MouseAdapter() {
@@ -441,7 +498,10 @@ public class VistaGrafica implements IVista {
                 public void mouseClicked(MouseEvent event) {
                     boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
                     if (esMiTurno) {
-                        String text = ((JLabel) event.getComponent()).getText();
+                        JLabel carta = (JLabel) event.getComponent();
+                        String text = carta.getText();
+                        //carta.setForeground(Color.WHITE);
+                        //carta.setBackground(Color.BLACK);
                         byte idCarta = Byte.parseByte(text);
                         cartaSeleccionada = idCarta;
                     } else {
@@ -462,4 +522,15 @@ public class VistaGrafica implements IVista {
             southPanel.add(cartaLabel);
         }
     }
+
+    @Override
+    public String getIdJugador() {
+        return idJugador;
+    }
+
+    @Override
+    public void setJugador(IJugador jugador) {
+        this.jugador = jugador;
+    }
+
 }

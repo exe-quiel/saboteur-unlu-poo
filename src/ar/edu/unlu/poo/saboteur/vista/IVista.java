@@ -2,6 +2,8 @@ package ar.edu.unlu.poo.saboteur.vista;
 
 import java.util.List;
 
+import ar.edu.unlu.poo.saboteur.modelo.Evento;
+import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 
 public interface IVista {
@@ -16,5 +18,9 @@ public interface IVista {
 
     public void mostrarGrilla(byte idCarta, byte x, byte y);
 
-    public void iniciarJuego(String idJugadorDestino, List<Byte> mano);
+    public void iniciarJuego(Evento evento);
+
+    public String getIdJugador();
+
+    public void setJugador(IJugador obtenerJugador);
 }

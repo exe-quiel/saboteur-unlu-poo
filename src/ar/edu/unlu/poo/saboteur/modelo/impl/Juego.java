@@ -120,19 +120,50 @@ public class Juego extends ObservableRemoto implements IJuego {
         System.out.println("[" + idJugador + "] está listo");
 
         if (jugadores.stream().allMatch(Jugador::getListo)) {
-            System.out.println("Todos listos");
-            this.partidaEmpezo = true;
-            for (Jugador jugador : jugadores) {
-                Random random = new Random();
-                List<Byte> mano = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    mano.add((byte) random.nextInt(50));
-                }
-                System.out.println("Jugador [" + idJugador + "] mano " + mano);
-                //jugador.setMano(mano);
-                Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugador.getId(), mano);
-                this.notificarObservadores(evento);
-            }
+            comenzarJuego(idJugador);
         }
+    }
+
+    private void comenzarJuego(String idJugador) throws RemoteException {
+        System.out.println("Todos listos");
+        this.partidaEmpezo = true;
+        for (Jugador jugador : jugadores) {
+            Random random = new Random();
+            List<Byte> mano = new ArrayList<>();
+            List<Byte> herramientasRotas = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                mano.add((byte) random.nextInt(50));
+                if (i < 3) {
+                    herramientasRotas.add((byte) random.nextInt(50));
+                }
+            }
+            System.out.println("Jugador [" + jugador.getId() + "] mano " + mano);
+            jugador.recibirCartas(mano);
+            jugador.setHerramientasRotas(herramientasRotas);
+        }
+        Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores);
+        this.notificarObservadores(evento);
+        this.enviarMensaje(new Mensaje("Sistema", "Comenzó el juego"));
+    }
+
+    @Override
+    public void aplicarCartaDeHerramienta(byte cartaSeleccionada, String idJugadorDestino) throws RemoteException {
+        Jugador jugadorDestino = this.jugadores
+            .stream()
+            .filter(jugador -> jugador.getId().equals(idJugadorDestino))
+            .findFirst()
+            .get();
+
+        if (!jugadorDestino.getHerramientasRotas().contains(cartaSeleccionada)) {
+            jugadorDestino.getHerramientasRotas().add(cartaSeleccionada);
+        }
+        // TODO EXE - Enviar mensaje del sistema con el evento
+        // ("Jugador X aplicó a jugador Y la herramienta rota Z")
+        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", this.obtenerIdDelJugadorActual(), idJugadorDestino, cartaSeleccionada);
+        this.enviarMensaje(new Mensaje("Sistema", mensaje));
+    }
+
+    private String obtenerIdDelJugadorActual() {
+        return this.jugadores.get(indiceJugadorTurno).getId();
     }
 }

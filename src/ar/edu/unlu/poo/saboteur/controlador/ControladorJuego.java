@@ -46,7 +46,7 @@ public class ControladorJuego implements IControladorRemoto {
                 vista.cambiarTurno(evento.getIdJugadorOrigen());
                 break;
             case INICIA_JUEGO:
-                vista.iniciarJuego(evento.getIdJugadorDestino(), evento.getMano());
+                vista.iniciarJuego(evento);
                 break;
             default:
                 break;
@@ -86,5 +86,9 @@ public class ControladorJuego implements IControladorRemoto {
 
     public void marcarListo(String idJugador) throws RemoteException {
         juego.marcarListo(idJugador);
+    }
+
+    public void aplicarCartaDeHerramienta(byte cartaSeleccionada, String idJugadorDestino) throws RemoteException {
+        juego.aplicarCartaDeHerramienta(cartaSeleccionada, idJugadorDestino);
     }
 }

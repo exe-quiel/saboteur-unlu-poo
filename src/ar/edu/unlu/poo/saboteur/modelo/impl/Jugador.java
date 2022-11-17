@@ -6,19 +6,22 @@ import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
+import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.RolJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 
-public class Jugador implements Serializable {
+public class Jugador implements IJugador, Serializable {
 
     /**
      * 
      */
     private static final long serialVersionUID = 3336584393172378611L;
     private final String id;
-    private List<CartaDeJuego> mano;
+    private List<Byte> mano;
     private List<CartaDePuntos> puntaje;
-    private List<CartaDeAccion> herramientasRotas;
+    private List<Byte> herramientasRotas;
     private boolean listo;
+    private RolJugador rol;
 
     public Jugador(String id) {
         super();
@@ -36,6 +39,7 @@ public class Jugador implements Serializable {
                 .sum();
     }
 
+    /*
     public boolean agregarHerramientaRota(CartaDeAccion cartaDeAccion) {
         TipoCartaAccion tipo = cartaDeAccion.getTipo();
         if (tipo.esCartaDeHerramientaRota()) {
@@ -47,7 +51,9 @@ public class Jugador implements Serializable {
         }
         throw new RuntimeException("Mandaste cualquiera");
     }
+    */
 
+    /*
     public boolean arreglarHerramienta(CartaDeAccion cartaDeAccion) {
         TipoCartaAccion tipo = cartaDeAccion.getTipo();
         if (tipo.esCartaDeHerramientaReparada()) {
@@ -78,10 +84,10 @@ public class Jugador implements Serializable {
         }
         throw new RuntimeException("Mandaste cualquier carta");
     }
+    */
 
-    public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
-        this.mano.clear();
-        this.mano.addAll(cartasDeJuego);
+    public void recibirCartas(List<Byte> cartasDeJuego) {
+        this.mano = cartasDeJuego;
     }
 
     public void marcarListo() {
@@ -92,7 +98,28 @@ public class Jugador implements Serializable {
         return listo;
     }
 
-    public void setMano(byte[] mano) {
-        //this.mano = mano;
+    public void setHerramientasRotas(List<Byte> herramientasRotas) {
+        this.herramientasRotas = herramientasRotas;
+    }
+
+    @Override
+    public List<Byte> getHerramientasRotas() {
+        return herramientasRotas;
+    }
+
+    @Override
+    public List<Byte> getMano() {
+        return mano;
+    }
+
+    @Override
+    public int getPuntaje() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public RolJugador getRol() {
+        return rol;
     }
 }
