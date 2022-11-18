@@ -37,9 +37,11 @@ import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.IJugadorBase;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Jugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.util.GeneradorDeImagenes;
@@ -259,22 +261,52 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void mostrarGrilla(byte idCarta, byte x, byte y) {
-        Arrays.asList(tablero.getComponents()).stream().filter(carta -> {
-            if (carta instanceof LabelCarta) {
-                LabelCarta labelCarta = (LabelCarta) carta;
-                return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
-            }
-            return false;
-        }).findFirst().ifPresent(carta -> {
-            if (carta instanceof LabelCarta) {
-                LabelCarta labelCarta = (LabelCarta) carta;
-                labelCarta.setText(String.valueOf(idCarta));
-                // Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR
-                // };
-                // labelCarta.setIcon(new
-                // ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
-            }
-        });
+        Arrays.asList(tablero.getComponents())
+            .stream()
+            .filter(carta -> {
+                if (carta instanceof LabelCarta) {
+                    LabelCarta labelCarta = (LabelCarta) carta;
+                    return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
+                }
+                return false;
+            }).findFirst().ifPresent(carta -> {
+                if (carta instanceof LabelCarta) {
+                    LabelCarta labelCarta = (LabelCarta) carta;
+                    CartaDeJuego cartaDeJuego = labelCarta.getCarta();
+                    if (cartaDeJuego instanceof CartaDeTunel) {
+                        CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaDeJuego;
+                        StringBuilder sb = new StringBuilder();
+                        List<Entrada> entradas = Arrays.asList(cartaDeTunel.getEntradas());
+                        if (entradas.contains(Entrada.NORTE)) {
+                            sb.append("    ^    ");
+                        } else {
+                            sb.append("         ");
+                        }
+                        sb.append("\n");
+                        if (entradas.contains(Entrada.OESTE)) {
+                            sb.append("<       ");
+                        } else {
+                            sb.append("        ");
+                        }
+                        if (entradas.contains(Entrada.ESTE)) {
+                            sb.append(">");
+                        } else {
+                            sb.append(" ");
+                        }
+                        sb.append("\n");
+                        if (entradas.contains(Entrada.SUR)) {
+                            sb.append("    ∨    ");
+                        } else {
+                            sb.append("         ");
+                        }
+                        labelCarta.setText(sb.toString());
+                    }
+                    // Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR
+                    // };
+                    // labelCarta.setIcon(new
+                    // ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
+                }
+            });
     }
 
     public class LabelCarta extends JLabel {

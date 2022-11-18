@@ -5,12 +5,12 @@ import java.util.Arrays;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 
-public class CartaDeAccion extends CartaDeJuego {
+public class CartaDeAccion implements CartaDeJuego {
 
     private TipoCartaAccion tipo;
 
-    public CartaDeAccion(TipoCartaAccion tipo, String descripcion) {
-        super(descripcion);
+    public CartaDeAccion(TipoCartaAccion tipo) {
+        super();
         this.tipo = tipo;
     }
 

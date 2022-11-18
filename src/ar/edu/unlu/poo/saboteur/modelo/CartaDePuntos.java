@@ -1,11 +1,12 @@
 package ar.edu.unlu.poo.saboteur.modelo;
 
-public class CartaDePuntos extends CartaDeJuego {
+public class CartaDePuntos implements CartaDeJuego {
 
     private byte puntos;
 
-    public CartaDePuntos(byte puntos, String descripcion) {
-        super(descripcion);
+    public CartaDePuntos(byte puntos) {
+        super();
+        this.puntos = puntos;
     }
 
     public byte getPuntos() {

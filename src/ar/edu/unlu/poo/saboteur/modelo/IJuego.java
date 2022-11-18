@@ -20,11 +20,9 @@ public interface IJuego extends IObservableRemoto {
 
     public String generarIdJugador() throws RemoteException;
 
-    public List<String> getDatosJugadores() throws RemoteException;
+    public List<IJugador> getDatosJugadores() throws RemoteException;
 
     public int[][] getGrilla() throws RemoteException;
 
     public void marcarListo(String idJugador) throws RemoteException;
-
-    public void aplicarCartaDeHerramienta(byte cartaSeleccionada, String idJugadorDestino) throws RemoteException;
 }

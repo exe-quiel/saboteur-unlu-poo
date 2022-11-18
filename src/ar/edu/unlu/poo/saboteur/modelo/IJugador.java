@@ -9,4 +9,12 @@ public interface IJugador extends IJugadorBase {
     public int getPuntaje();
 
     public RolJugador getRol();
+
+    public void marcarListo();
+
+    public boolean getListo();
+
+    public void recibirCartas(List<Byte> mano);
+
+    public void setHerramientasRotas(List<Byte> herramientasRotas);
 }

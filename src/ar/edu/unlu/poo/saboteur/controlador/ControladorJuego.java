@@ -5,6 +5,7 @@ import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
+import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
@@ -79,7 +80,7 @@ public class ControladorJuego implements IControladorRemoto {
         return this.juego.generarIdJugador();
     }
 
-    public List<String> obtenerNombresJugadores() throws RemoteException {
+    public List<IJugador> obtenerNombresJugadores() throws RemoteException {
         return this.juego.getDatosJugadores();
         
     }
@@ -89,6 +90,6 @@ public class ControladorJuego implements IControladorRemoto {
     }
 
     public void aplicarCartaDeHerramienta(byte cartaSeleccionada, String idJugadorDestino) throws RemoteException {
-        juego.aplicarCartaDeHerramienta(cartaSeleccionada, idJugadorDestino);
+        juego.jugarCarta(idJugadorDestino, cartaSeleccionada);
     }
 }
