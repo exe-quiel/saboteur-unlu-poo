@@ -2,14 +2,18 @@ package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.RolJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
@@ -69,8 +73,9 @@ public class Juego extends ObservableRemoto implements IJuego {
                 jugadorDestino.romperHerramienta(carta);
             }
         } else if (carta.esCartaDeHerramientaReparada()) {
-            // TODO EXE - Terminar
-            //jugadorDestino.
+            if (jugadorDestino.repararHerramienta(carta)) {
+                descartar(carta);
+            }
         }
     
         String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", this.obtenerJugadorDelTurnoActual(), jugadorDestino.getId(), carta);
@@ -172,24 +177,27 @@ public class Juego extends ObservableRemoto implements IJuego {
     private void comenzarJuego() throws RemoteException {
         System.out.println("Todos listos");
         this.partidaEmpezo = true;
-        for (IJugador jugador : jugadores) {
-            Random random = new Random();
-            List<CartaDeJuego> mano = new ArrayList<>();
-            List<CartaDeAccion> herramientasRotas = new ArrayList<>();
-            // TODO EXE - Tomar al azar del mazo
-            for (int i = 0; i < 10; i++) {
-                mano.add((byte) random.nextInt(50));
-                if (i < 3) {
-                    herramientasRotas.add((byte) random.nextInt(50));
-                }
+        this.mezclarMazo();
+        this.asignarRoles();
+        for (int i = 0; i < 10; i++) {
+            for (IJugador jugador : jugadores) {
+                jugador.getMano().add(this.mazo.remove(0));
             }
-            System.out.println("Jugador [" + jugador.getId() + "] mano " + mano);
-            jugador.recibirCartas(mano);
-            jugador.setHerramientasRotas(herramientasRotas);
         }
         Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores);
         this.notificarObservadores(evento);
         this.enviarMensaje(new Mensaje(null, "Comenzó el juego"));
+    }
+
+    private void asignarRoles() {
+        Random random = new Random();
+        this.jugadores.forEach(jugador -> jugador.setRol(random.nextBoolean()
+                ? RolJugador.SABOTEADOR
+                : RolJugador.BUSCADOR));
+    }
+
+    private void mezclarMazo() {
+        Collections.shuffle(this.mazo);
     }
 
     private CartaDeTunel obtenerCartaQueColisiona(CartaDeAccion carta) {
@@ -206,6 +214,12 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void descartar(CartaDeJuego carta) {
+        this.obtenerJugadorDelTurnoActual().removerCartaDeLaMano(carta);
         this.pilaDeDescarte.add(carta);
+    }
+
+    @Override
+    public CartaDeJuego tomarCarta() {
+        return this.mazo.remove(0);
     }
 }

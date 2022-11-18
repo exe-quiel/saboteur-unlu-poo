@@ -29,4 +29,6 @@ public interface IJuego extends IObservableRemoto {
     public void marcarListo(IJugador jugador) throws RemoteException;
 
     public void descartar(CartaDeJuego carta);
+
+    public CartaDeJuego tomarCarta();
 }

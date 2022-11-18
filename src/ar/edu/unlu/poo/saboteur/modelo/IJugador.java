@@ -12,6 +12,8 @@ public interface IJugador extends IJugadorBase {
 
     public RolJugador getRol();
 
+    public void setRol(RolJugador rol);
+
     public void marcarListo();
 
     public boolean getListo();
@@ -21,4 +23,8 @@ public interface IJugador extends IJugadorBase {
     public void setHerramientasRotas(List<CartaDeAccion> herramientasRotas);
 
     public boolean romperHerramienta(CartaDeAccion cartaDeAccion);
+
+    public boolean repararHerramienta(CartaDeAccion cartaDeAccion);
+
+    public void removerCartaDeLaMano(CartaDeJuego carta);
 }

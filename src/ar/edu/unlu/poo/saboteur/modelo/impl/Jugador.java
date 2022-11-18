@@ -3,6 +3,7 @@ package ar.edu.unlu.poo.saboteur.modelo.impl;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
@@ -52,28 +53,20 @@ public class Jugador implements IJugador, Serializable {
         return herramientasRotas.add(cartaDeAccion);
     }
 
-    public boolean arreglarHerramienta(CartaDeAccion cartaDeAccion) {
-        List<TipoCartaAccion> tiposABuscar = cartaDeAccion.getTipos();
-        TipoCartaAccion tipoABuscar = null;
-        switch (tipo) {
-        case LAMPARA_REPARADA:
-            tipoABuscar = TipoCartaAccion.LAMPARA_ROTA;
-            break;
-        case CARRETILLA_REPARADA:
-            tipoABuscar = TipoCartaAccion.CARRETILLA_ROTA;
-            break;
-        case PICO_REPARADO:
-            tipoABuscar = TipoCartaAccion.PICO_ROTO;
-            break;
-        default:
-            throw new RuntimeException("ERROR, CARTA INESPERADA");
-        }
-        Iterator<CartaDeAccion> herramientasRotasIt = herramientasRotas.iterator();
+    @Override
+    public boolean repararHerramienta(CartaDeAccion cartaDeReparacion) {
+        List<TipoCartaAccion> tiposABuscar = cartaDeReparacion.getTipos()
+                .stream()
+                .map(tipo -> tipo.getCartaQueRepara())
+                .collect(Collectors.toList());
+
+        Iterator<CartaDeAccion> herramientasRotasIterator = this.herramientasRotas.iterator();
         boolean removida = false;
-        while (herramientasRotasIt.hasNext() && !removida) {
-            CartaDeAccion carta = (CartaDeAccion) herramientasRotasIt.next();
-            if (carta.getTipo() == tipoABuscar) {
-                herramientasRotasIt.remove();
+        while (herramientasRotasIterator.hasNext() && !removida) {
+            CartaDeAccion carta = herramientasRotasIterator.next();
+            TipoCartaAccion tipoCartaRota = carta.getTipos().get(0);
+            if (tiposABuscar.contains(tipoCartaRota)) {
+                herramientasRotasIterator.remove();
                 removida = true;
             }
         }
@@ -109,5 +102,17 @@ public class Jugador implements IJugador, Serializable {
     @Override
     public RolJugador getRol() {
         return rol;
+    }
+
+    @Override
+    public void setRol(RolJugador rol) {
+        this.rol = rol;
+    }
+
+    @Override
+    public void removerCartaDeLaMano(CartaDeJuego carta) {
+        if (this.mano.contains(carta)) {
+            this.mano.remove(carta);
+        }
     }
 }
