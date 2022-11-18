@@ -7,6 +7,8 @@ import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 import ar.edu.unlu.rmimvc.cliente.IControladorRemoto;
@@ -36,15 +38,15 @@ public class ControladorJuego implements IControladorRemoto {
             case JUGADOR_SALE:
                 break;
             case USA_CARTA:
-                vista.mostrarGrilla(evento.getIdCarta(), evento.getX(), evento.getY());
-                vista.cambiarTurno(evento.getIdJugadorOrigen());
+                //vista.mostrarGrilla(evento.getCarta());
+                vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case NUEVO_MENSAJE:
                 vista.mostrarMensajes(this.juego.getMensajes());
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
-                vista.cambiarTurno(evento.getIdJugadorOrigen());
+                vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case INICIA_JUEGO:
                 vista.iniciarJuego(evento);
@@ -60,12 +62,21 @@ public class ControladorJuego implements IControladorRemoto {
         this.juego = (IJuego) arg0;
     }
 
-    public void jugarCarta(byte idCarta, byte x, byte y) throws RemoteException {
-        this.juego.jugarCarta(idCarta, x, y);
+    public void jugarCarta(CartaDeTunel carta) throws RemoteException {
+        this.juego.jugarCarta(carta);
     }
 
-    public void jugarCarta(String idJugadorDestino, byte idCarta) throws RemoteException {
-        this.juego.jugarCarta(idJugadorDestino, idCarta);
+    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException {
+        this.juego.jugarCarta(jugadorDestino, carta);
+    }
+
+    /**
+     * Permite jugar una carta de accion en el tablero (mapa o derrumbe).
+     * 
+     * @param carta carta a jugar
+     */
+    public void jugarCarta(CartaDeAccion carta) {
+        this.juego.jugarCarta(carta);
     }
 
     public void enviarMensaje(Mensaje mensaje) {
@@ -85,11 +96,7 @@ public class ControladorJuego implements IControladorRemoto {
         
     }
 
-    public void marcarListo(String idJugador) throws RemoteException {
-        juego.marcarListo(idJugador);
-    }
-
-    public void aplicarCartaDeHerramienta(byte cartaSeleccionada, String idJugadorDestino) throws RemoteException {
-        juego.jugarCarta(idJugadorDestino, cartaSeleccionada);
+    public void marcarListo(IJugador jugador) throws RemoteException {
+        juego.marcarListo(jugador);
     }
 }

@@ -1,6 +1,6 @@
 package ar.edu.unlu.poo.saboteur.modelo;
 
-public class CartaDePuntos implements CartaDeJuego {
+public class CartaDePuntos {
 
     private byte puntos;
 

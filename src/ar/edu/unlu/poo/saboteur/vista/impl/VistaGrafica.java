@@ -276,7 +276,7 @@ public class VistaGrafica implements IVista {
                     if (cartaDeJuego instanceof CartaDeTunel) {
                         CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaDeJuego;
                         StringBuilder sb = new StringBuilder();
-                        List<Entrada> entradas = Arrays.asList(cartaDeTunel.getEntradas());
+                        List<Entrada> entradas = cartaDeTunel.getEntradas();
                         if (entradas.contains(Entrada.NORTE)) {
                             sb.append("    ^    ");
                         } else {

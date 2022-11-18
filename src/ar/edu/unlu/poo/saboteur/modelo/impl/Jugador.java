@@ -17,9 +17,9 @@ public class Jugador implements IJugador, Serializable {
      */
     private static final long serialVersionUID = 3336584393172378611L;
     private final String id;
-    private List<Byte> mano;
+    private List<CartaDeJuego> mano;
     private List<CartaDePuntos> puntaje;
-    private List<Byte> herramientasRotas;
+    private List<CartaDeAccion> herramientasRotas;
     private boolean listo;
     private RolJugador rol;
 
@@ -32,6 +32,7 @@ public class Jugador implements IJugador, Serializable {
         return id;
     }
 
+    @Override
     public int calcularPuntaje() {
         return puntaje
                 .stream()
@@ -39,54 +40,47 @@ public class Jugador implements IJugador, Serializable {
                 .sum();
     }
 
-    /*
-    public boolean agregarHerramientaRota(CartaDeAccion cartaDeAccion) {
-        TipoCartaAccion tipo = cartaDeAccion.getTipo();
-        if (tipo.esCartaDeHerramientaRota()) {
-            boolean yaEstaRota = herramientasRotas.stream().anyMatch(carta -> carta.getTipo() == tipo);
-            if (yaEstaRota) {
-                return false;
-            }
-            return herramientasRotas.add(cartaDeAccion);
+    @Override
+    public boolean romperHerramienta(CartaDeAccion cartaDeAccion) {
+        TipoCartaAccion tipo = cartaDeAccion.getTipos().get(0);
+        boolean yaEstaRota = herramientasRotas
+                .stream()
+                .anyMatch(carta -> carta.getTipos().get(0) == tipo);
+        if (yaEstaRota) {
+            return false;
         }
-        throw new RuntimeException("Mandaste cualquiera");
+        return herramientasRotas.add(cartaDeAccion);
     }
-    */
 
-    /*
     public boolean arreglarHerramienta(CartaDeAccion cartaDeAccion) {
-        TipoCartaAccion tipo = cartaDeAccion.getTipo();
-        if (tipo.esCartaDeHerramientaReparada()) {
-            TipoCartaAccion tipoABuscar = null;
-            switch (tipo) {
-            case LAMPARA_REPARADA:
-                tipoABuscar = TipoCartaAccion.LAMPARA_ROTA;
-                break;
-            case CARRETILLA_REPARADA:
-                tipoABuscar = TipoCartaAccion.CARRETILLA_ROTA;
-                break;
-            case PICO_REPARADO:
-                tipoABuscar = TipoCartaAccion.PICO_ROTO;
-                break;
-            default:
-                throw new RuntimeException("ERROR, CARTA INESPERADA");
-            }
-            Iterator<CartaDeAccion> herramientasRotasIt = herramientasRotas.iterator();
-            boolean removida = false;
-            while (herramientasRotasIt.hasNext() && !removida) {
-                CartaDeAccion carta = (CartaDeAccion) herramientasRotasIt.next();
-                if (carta.getTipo() == tipoABuscar) {
-                    herramientasRotasIt.remove();
-                    removida = true;
-                }
-            }
-            return removida;
+        List<TipoCartaAccion> tiposABuscar = cartaDeAccion.getTipos();
+        TipoCartaAccion tipoABuscar = null;
+        switch (tipo) {
+        case LAMPARA_REPARADA:
+            tipoABuscar = TipoCartaAccion.LAMPARA_ROTA;
+            break;
+        case CARRETILLA_REPARADA:
+            tipoABuscar = TipoCartaAccion.CARRETILLA_ROTA;
+            break;
+        case PICO_REPARADO:
+            tipoABuscar = TipoCartaAccion.PICO_ROTO;
+            break;
+        default:
+            throw new RuntimeException("ERROR, CARTA INESPERADA");
         }
-        throw new RuntimeException("Mandaste cualquier carta");
+        Iterator<CartaDeAccion> herramientasRotasIt = herramientasRotas.iterator();
+        boolean removida = false;
+        while (herramientasRotasIt.hasNext() && !removida) {
+            CartaDeAccion carta = (CartaDeAccion) herramientasRotasIt.next();
+            if (carta.getTipo() == tipoABuscar) {
+                herramientasRotasIt.remove();
+                removida = true;
+            }
+        }
+        return removida;
     }
-    */
 
-    public void recibirCartas(List<Byte> cartasDeJuego) {
+    public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
         this.mano = cartasDeJuego;
     }
 
@@ -98,24 +92,18 @@ public class Jugador implements IJugador, Serializable {
         return listo;
     }
 
-    public void setHerramientasRotas(List<Byte> herramientasRotas) {
+    public void setHerramientasRotas(List<CartaDeAccion> herramientasRotas) {
         this.herramientasRotas = herramientasRotas;
     }
 
     @Override
-    public List<Byte> getHerramientasRotas() {
+    public List<CartaDeAccion> getHerramientasRotas() {
         return herramientasRotas;
     }
 
     @Override
-    public List<Byte> getMano() {
+    public List<CartaDeJuego> getMano() {
         return mano;
-    }
-
-    @Override
-    public int getPuntaje() {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
     @Override

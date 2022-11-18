@@ -3,16 +3,18 @@ package ar.edu.unlu.poo.saboteur.modelo;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 public interface IJuego extends IObservableRemoto {
 
-    public void jugarCarta(byte idCarta, byte x, byte y) throws RemoteException;
+    public void jugarCarta(CartaDeTunel carta) throws RemoteException;
 
-    public void jugarCarta(String idJugadorDestino, byte idCarta) throws RemoteException;
+    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException;
 
-    public void reestablecerGrilla() throws RemoteException;
+    public void jugarCarta(CartaDeAccion carta);
 
     public void enviarMensaje(Mensaje mensaje) throws RemoteException;
 
@@ -24,5 +26,7 @@ public interface IJuego extends IObservableRemoto {
 
     public int[][] getGrilla() throws RemoteException;
 
-    public void marcarListo(String idJugador) throws RemoteException;
+    public void marcarListo(IJugador jugador) throws RemoteException;
+
+    public void descartar(CartaDeJuego carta);
 }

@@ -2,6 +2,8 @@ package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.io.Serializable;
 
+import ar.edu.unlu.poo.saboteur.modelo.IJugadorBase;
+
 public class Mensaje implements Serializable {
 
     /**
@@ -9,20 +11,24 @@ public class Mensaje implements Serializable {
      */
     private static final long serialVersionUID = -4980136064296825830L;
 
-    private String jugador;
+    private IJugadorBase jugador;
     private String texto;
 
-    public Mensaje(String jugador, String texto) {
+    public Mensaje(IJugadorBase jugador, String texto) {
         super();
         this.jugador = jugador;
         this.texto = texto;
     }
 
-    public String getJugador() {
+    public boolean esDelSistema() {
+        return this.jugador == null;
+    }
+
+    public IJugadorBase getJugador() {
         return jugador;
     }
 
-    public void setJugador(String jugador) {
+    public void setJugador(IJugadorBase jugador) {
         this.jugador = jugador;
     }
 

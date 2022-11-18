@@ -3,30 +3,31 @@ package ar.edu.unlu.poo.saboteur.modelo;
 import java.io.Serializable;
 import java.util.List;
 
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
+
 public class Evento implements Serializable {
 
     /**
      * 
      */
     private static final long serialVersionUID = -7521774005062357442L;
-    private String idJugadorOrigen;
-    private String idJugadorDestino;
-    private byte x;
-    private byte y;
+    private IJugador jugadorOrigen;
+    private IJugador jugadorDestino;
+
     private TipoEvento tipoEvento;
-    private byte idCarta;
+    private CartaDeJuego carta;
     private List<? extends IJugadorBase> jugadores;
-    
 
     public Evento(TipoEvento tipoEvento) {
         super();
         this.tipoEvento = tipoEvento;
     }
 
-    public Evento(TipoEvento tipoEvento, String idJugadorOrigen) {
+    public Evento(TipoEvento tipoEvento, IJugador jugadorOrigen) {
         super();
         this.tipoEvento = tipoEvento;
-        this.idJugadorOrigen = idJugadorOrigen;
+        this.jugadorOrigen = jugadorOrigen;
     }
 
     public Evento(TipoEvento tipoEvento, List<? extends IJugadorBase> jugadores) {
@@ -54,12 +55,10 @@ public class Evento implements Serializable {
      * @param x
      * @param y
      */
-    public Evento(String idJugadorOrigen, byte idCarta, byte x, byte y) {
+    public Evento(IJugador jugadorOrigen, CartaDeTunel carta) {
         this(TipoEvento.USA_CARTA);
-        this.idJugadorOrigen = idJugadorOrigen;
-        this.idCarta = idCarta;
-        this.x = x;
-        this.y = y;
+        this.jugadorOrigen = jugadorOrigen;
+        this.carta = carta;
     }
 
     /**
@@ -67,9 +66,9 @@ public class Evento implements Serializable {
      * 
      * @param idJugadorOrigen
      */
-    public Evento(String idJugadorOrigen) {
+    public Evento(IJugador jugadorOrigen) {
         this(TipoEvento.DESCARTA);
-        this.idJugadorOrigen = idJugadorOrigen;
+        this.jugadorOrigen = jugadorOrigen;
     }
 
     /**
@@ -80,35 +79,32 @@ public class Evento implements Serializable {
      * @param idJugadorDestino
      * @param idCarta
      */
-    public Evento(String idJugadorOrigen, String idJugadorDestino, byte idCarta) {
+    public Evento(IJugador jugadorOrigen, IJugador jugadorDestino, CartaDeAccion carta) {
         this(TipoEvento.USA_CARTA);
-        this.idJugadorOrigen = idJugadorOrigen;
-        this.idJugadorDestino = idJugadorDestino;
-        this.idCarta = idCarta;
+        this.jugadorOrigen = jugadorOrigen;
+        this.jugadorDestino = jugadorDestino;
+        this.carta = carta;
     }
 
-    public String getIdJugadorOrigen() {
-        return idJugadorOrigen;
+    public Evento(TipoEvento tipoEvento, CartaDeTunel carta, IJugador jugador) {
+        this(tipoEvento);
+        this.carta = carta;
     }
 
-    public String getIdJugadorDestino() {
-        return idJugadorDestino;
+    public IJugador getJugadorOrigen() {
+        return jugadorOrigen;
     }
 
-    public byte getX() {
-        return x;
-    }
-
-    public byte getY() {
-        return y;
+    public IJugador getJugadorDestino() {
+        return jugadorDestino;
     }
 
     public TipoEvento getTipoEvento() {
         return tipoEvento;
     }
 
-    public byte getIdCarta() {
-        return idCarta;
+    public CartaDeJuego getCarta() {
+        return carta;
     }
 
     public List<? extends IJugadorBase> getJugadores() {

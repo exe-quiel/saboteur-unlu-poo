@@ -1,30 +1,61 @@
 package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.util.Arrays;
+import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 
 public class CartaDeAccion implements CartaDeJuego {
 
-    private TipoCartaAccion tipo;
+    private List<TipoCartaAccion> tipos;
+    private int x;
+    private int y;
+
+    public CartaDeAccion() {
+        super();
+        this.x = -1;
+        this.y = -1;
+    }
+
+    public CartaDeAccion(List<TipoCartaAccion> tipos) {
+        this();
+        this.tipos = tipos;
+    }
 
     public CartaDeAccion(TipoCartaAccion tipo) {
-        super();
-        this.tipo = tipo;
+        this(Arrays.asList(tipo));
     }
 
-    public TipoCartaAccion getTipo() {
-        return tipo;
+    public List<TipoCartaAccion> getTipos() {
+        return tipos;
     }
 
-    public static boolean esCartaDeHerramientaRota(CartaDeAccion cartaDeAccion) {
-        return Arrays.asList(TipoCartaAccion.LAMPARA_ROTA, TipoCartaAccion.CARRETILLA_ROTA, TipoCartaAccion.PICO_ROTO)
-                .contains(cartaDeAccion.getTipo());
+    public boolean esCartaDeHerramientaReparada() {
+        return this.tipos
+                .stream()
+                .anyMatch(TipoCartaAccion::esCartaDeHerramientaReparada);
     }
 
-    public static boolean esCartaDeHerramientaReparada(CartaDeAccion cartaDeAccion) {
-        return Arrays.asList(TipoCartaAccion.LAMPARA_REPARADA, TipoCartaAccion.CARRETILLA_REPARADA, TipoCartaAccion.PICO_REPARADO)
-                .contains(cartaDeAccion.getTipo());
+    public boolean esCartaDeHerramientaRota() {
+        return this.tipos
+                .stream()
+                .anyMatch(TipoCartaAccion::esCartaDeHerramientaRota);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 }

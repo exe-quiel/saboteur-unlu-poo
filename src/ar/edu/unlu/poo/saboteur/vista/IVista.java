@@ -4,6 +4,7 @@ import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 
 public interface IVista {
@@ -12,11 +13,11 @@ public interface IVista {
 
     public void mostrarMensajes(List<Mensaje> mensajes);
 
-    public void cambiarTurno(String idJugador);
+    public void cambiarTurno(IJugador jugador);
 
-    public void actualizarJugadores(List<String> jugadores);
+    public void actualizarJugadores(List<IJugador> jugadores);
 
-    public void mostrarGrilla(byte idCarta, byte x, byte y);
+    public void mostrarTablero(CartaDeTunel carta);
 
     public void iniciarJuego(Evento evento);
 
