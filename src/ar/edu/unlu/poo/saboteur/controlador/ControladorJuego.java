@@ -93,7 +93,6 @@ public class ControladorJuego implements IControladorRemoto {
 
     public List<IJugador> obtenerNombresJugadores() throws RemoteException {
         return this.juego.getDatosJugadores();
-        
     }
 
     public void marcarListo(IJugador jugador) throws RemoteException {

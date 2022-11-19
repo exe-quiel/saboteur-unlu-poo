@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.EstadoPartida;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
@@ -20,7 +19,6 @@ import ar.edu.unlu.rmimvc.observer.ObservableRemoto;
 
 public class Juego extends ObservableRemoto implements IJuego {
 
-    private int[][] grilla = new int[6][9];
     private byte indiceIdJugador = 1;
     private byte indiceJugadorTurno = 0;
     private List<IJugador> jugadores = new LinkedList<>();
@@ -33,7 +31,7 @@ public class Juego extends ObservableRemoto implements IJuego {
     private CartaDeTunel cartaDeInicio;
     private List<CartaDeTunel> cartasDeDestino;
 
-    private boolean partidaEmpezo;
+    private EstadoPartida partidaEmpezo;
 
     public Juego() {
         super();
@@ -97,18 +95,23 @@ public class Juego extends ObservableRemoto implements IJuego {
             CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(carta);
             if (cartaADerrumbar != null) {
                 cartaADerrumbar.derrumbar();
+                this.descartar(cartaADerrumbar);
+                Evento evento = new Evento(TipoEvento.CARTA_DERRUMBADA, cartaADerrumbar);
+                try {
+                    this.notificarObservadores(evento);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         } else if (carta.getTipos().get(0) == TipoCartaAccion.MAPA) {
-            CartaDeTunel destino = this.cartasDeDestino
-                .stream()
-                .filter(cartaDeDestino -> cartaDeDestino.colisionaCon(carta))
-                .findFirst()
-                .orElse(null);
-            Evento evento = new Evento(TipoEvento.MOSTRAR_CARTA_DE_DESTINO, destino, this.obtenerJugadorDelTurnoActual());
-            try {
-                this.notificarObservadores(evento);
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            CartaDeTunel destino = this.obtenerCartaQueColisiona(carta);
+            if (destino != null) {
+                Evento evento = new Evento(TipoEvento.MOSTRAR_CARTA_DE_DESTINO, destino, this.obtenerJugadorDelTurnoActual());
+                try {
+                    this.notificarObservadores(evento);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -159,11 +162,6 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public int[][] getGrilla() throws RemoteException {
-        return grilla;
-    }
-
-    @Override
     public void marcarListo(IJugador jugador) throws RemoteException {
         jugador.marcarListo();
 
@@ -176,7 +174,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private void comenzarJuego() throws RemoteException {
         System.out.println("Todos listos");
-        this.partidaEmpezo = true;
+        this.partidaEmpezo = EstadoPartida.PRIMERA_RONDA;
         this.mezclarMazo();
         this.asignarRoles();
         for (int i = 0; i < 10; i++) {
@@ -221,5 +219,11 @@ public class Juego extends ObservableRemoto implements IJuego {
     @Override
     public CartaDeJuego tomarCarta() {
         return this.mazo.remove(0);
+    }
+
+    @Override
+    public int[][] getGrilla() throws RemoteException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

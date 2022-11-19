@@ -1,7 +1,6 @@
 package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.Entrada;
