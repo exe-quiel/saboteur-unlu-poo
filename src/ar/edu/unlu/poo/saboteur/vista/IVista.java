@@ -11,7 +11,7 @@ public interface IVista {
 
     public void iniciar();
 
-    public void mostrarMensajes(List<Mensaje> mensajes);
+    public void actualizarMensajes();
 
     public void cambiarTurno(IJugador jugador);
 
@@ -21,7 +21,7 @@ public interface IVista {
 
     public void iniciarJuego(Evento evento);
 
-    public String getIdJugador();
+    public IJugador getJugador();
 
     public void setJugador(IJugador obtenerJugador);
 }

@@ -116,10 +116,10 @@ public class Evento implements Serializable {
         return jugadores;
     }
 
-    public IJugador obtenerJugador(String idJugador) {
+    public IJugador obtenerJugadorCorrespondiente(IJugador jugador) {
         return (IJugador) jugadores
                 .stream()
-                .filter(jugador -> idJugador.equals(jugador.getId()))
+                .filter(j -> j.equals(jugador))
                 .findFirst()
                 .orElse(null);
     }

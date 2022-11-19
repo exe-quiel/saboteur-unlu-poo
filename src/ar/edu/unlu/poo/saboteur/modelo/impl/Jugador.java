@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,10 +28,11 @@ public class Jugador implements IJugador, Serializable {
     public Jugador(String id) {
         super();
         this.id = id;
+        this.mano = new ArrayList<>();
     }
 
-    public String getId() {
-        return id;
+    public void inicializar() {
+        this.mano.clear();
     }
 
     @Override
@@ -114,5 +116,20 @@ public class Jugador implements IJugador, Serializable {
         if (this.mano.contains(carta)) {
             this.mano.remove(carta);
         }
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Jugador)) {
+            return false;
+        }
+        Jugador otroJugador = (Jugador) object;
+        return this.id.equals(otroJugador.getId());
+        // TODO EXE - Ver tema hashcode
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
     }
 }

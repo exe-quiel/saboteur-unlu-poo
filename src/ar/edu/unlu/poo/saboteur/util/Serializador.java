@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -94,14 +95,17 @@ public class Serializador {
         return objetos;
     }
 
-    public <T> List<T> deserializarTodos(Class<T> clazz) {
+    public <T> List<T> deserializarLista(Class<T> clazz) {
         List<T> objetos = new ArrayList<>();
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(archivo))) {
             Object o = inputStream.readObject();
-            while (o != null) {
-                if (clazz.isInstance(o)) {
-                    objetos.add(clazz.cast(o));
-                    o = inputStream.readObject();
+            if (!(o instanceof Collection)) {
+                throw new RuntimeException("Esperaba una colección de elementos pero recibí: " + o.getClass());
+            }
+            Collection<T> coleccion = (Collection<T>) o;
+            for (Object objeto : coleccion) {
+                if (clazz.isInstance(objeto)) {
+                    objetos.add(clazz.cast(objeto));
                 } else {
                     throw new ClassCastException("El objeto no es una instancia de esa clase");
                 }

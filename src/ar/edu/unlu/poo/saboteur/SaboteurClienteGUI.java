@@ -11,6 +11,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
+import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 import ar.edu.unlu.poo.saboteur.vista.impl.VistaGrafica;
 import ar.edu.unlu.rmimvc.RMIMVCException;
@@ -43,15 +44,12 @@ public class SaboteurClienteGUI {
         } catch (RemoteException | RMIMVCException e) {
             e.printStackTrace();
         }
-        String nombreJugador = null;
-        try {
-            nombreJugador = controladorJuego.generarIdJugador();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Iniciando cliente [" + nombreJugador + "] en puerto [" + CLIENT_PORT + "]");
-        vista = new VistaGrafica(controladorJuego, nombreJugador);
-        System.out.println("Tu nombre: " + nombreJugador);
+        IJugador jugador = null;
+        jugador = controladorJuego.generarJugador();
+        String idJugador = jugador.getId();
+        System.out.println("Iniciando cliente [" + idJugador + "] en puerto [" + CLIENT_PORT + "]");
+        vista = new VistaGrafica(controladorJuego, jugador);
+        System.out.println("Tu nombre: " + idJugador);
         vista.iniciar();
     }
 

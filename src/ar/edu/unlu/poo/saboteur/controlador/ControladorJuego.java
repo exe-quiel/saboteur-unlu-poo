@@ -28,7 +28,7 @@ public class ControladorJuego implements IControladorRemoto {
     }
 
     @Override
-    public void actualizar(IObservableRemoto arg0, Object arg1) throws RemoteException {
+    public void actualizar(IObservableRemoto arg0, Object arg1) {
         if (arg1 instanceof Evento) {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
@@ -42,7 +42,7 @@ public class ControladorJuego implements IControladorRemoto {
                 vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case NUEVO_MENSAJE:
-                vista.mostrarMensajes(this.juego.getMensajes());
+                vista.actualizarMensajes();
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
@@ -57,17 +57,29 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    @Override
-    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
-        this.juego = (IJuego) arg0;
+    public List<Mensaje> obtenerMensajes() {
+        try {
+            return this.juego.getMensajes();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public void jugarCarta(CartaDeTunel carta) throws RemoteException {
-        this.juego.jugarCarta(carta);
+    public void jugarCarta(CartaDeTunel carta) {
+        try {
+            this.juego.jugarCarta(carta);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException {
-        this.juego.jugarCarta(jugadorDestino, carta);
+    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) {
+        try {
+            this.juego.jugarCarta(jugadorDestino, carta);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -76,7 +88,11 @@ public class ControladorJuego implements IControladorRemoto {
      * @param carta carta a jugar
      */
     public void jugarCarta(CartaDeAccion carta) {
-        this.juego.jugarCarta(carta);
+        try {
+            this.juego.jugarCarta(carta);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     public void enviarMensaje(Mensaje mensaje) {
@@ -87,15 +103,34 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public String generarIdJugador() throws RemoteException {
-        return this.juego.generarIdJugador();
+    public IJugador generarJugador() {
+        try {
+            return this.juego.generarJugador();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public List<IJugador> obtenerNombresJugadores() throws RemoteException {
-        return this.juego.getDatosJugadores();
+    public List<IJugador> obtenerNombresJugadores() {
+        try {
+            return this.juego.getDatosJugadores();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public void marcarListo(IJugador jugador) throws RemoteException {
-        juego.marcarListo(jugador);
+    public void marcarListo(IJugador jugador) {
+        try {
+            juego.marcarListo(jugador);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
+        this.juego = (IJuego) arg0;
     }
 }

@@ -6,27 +6,26 @@ import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 
-public class CartaDeTunel implements CartaDeJuego {
+public class CartaDeTunel extends CartaDeJuego {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 87353013422380149L;
     private TipoCartaTunel tipo;
     private boolean sinSalida;
     private List<Entrada> entradas;
-
-    private int x;
-    private int y;
 
     private CartaDeTunel norte;
     private CartaDeTunel sur;
     private CartaDeTunel este;
     private CartaDeTunel oeste;
 
-    public CartaDeTunel(TipoCartaTunel tipo, boolean sinSalida, List<Entrada> entradas, String descripcion) {
-        super();
+    public CartaDeTunel(int id, TipoCartaTunel tipo, boolean sinSalida, List<Entrada> entradas) {
+        super(id);
         this.tipo = tipo;
         this.sinSalida = sinSalida;
         this.entradas = entradas;
-        this.x = -1;
-        this.y = -1;
     }
 
     public TipoCartaTunel getTipo() {
@@ -41,24 +40,16 @@ public class CartaDeTunel implements CartaDeJuego {
         return entradas;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setPosicion(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
     public CartaDeTunel getNorte() {
         return norte;
     }
 
     public boolean setNorte(CartaDeTunel carta) {
+     // En caso de derrumbe de la carta contigua
+        if (carta == null) {
+            this.norte = null;
+            return true;
+        }
         if (this.entradas.contains(Entrada.NORTE) && carta.getEntradas().contains(Entrada.SUR)) {
             this.norte = carta;
             carta.setSur(this);
@@ -72,7 +63,11 @@ public class CartaDeTunel implements CartaDeJuego {
     }
 
     public boolean setSur(CartaDeTunel carta) {
-        // TODO EXE - Considerar caso en el que derrumban la carta para todas las direcciones (carta == null)
+        // En caso de derrumbe de la carta contigua
+        if (carta == null) {
+            this.sur = null;
+            return true;
+        }
         if (this.entradas.contains(Entrada.SUR) && carta.getEntradas().contains(Entrada.NORTE)) {
             this.sur = carta;
             carta.setNorte(this);
@@ -86,6 +81,11 @@ public class CartaDeTunel implements CartaDeJuego {
     }
 
     public boolean setEste(CartaDeTunel carta) {
+     // En caso de derrumbe de la carta contigua
+        if (carta == null) {
+            this.este = null;
+            return true;
+        }
         if (this.entradas.contains(Entrada.ESTE) && carta.getEntradas().contains(Entrada.OESTE)) {
             this.este = carta;
             carta.setOeste(this);
@@ -99,6 +99,11 @@ public class CartaDeTunel implements CartaDeJuego {
     }
 
     public boolean setOeste(CartaDeTunel carta) {
+     // En caso de derrumbe de la carta contigua
+        if (carta == null) {
+            this.oeste = null;
+            return true;
+        }
         if (this.entradas.contains(Entrada.OESTE) && carta.getEntradas().contains(Entrada.ESTE)) {
             this.oeste = carta;
             carta.setEste(this);
@@ -131,39 +136,6 @@ public class CartaDeTunel implements CartaDeJuego {
         return false;
     }
 
-    public boolean colocarCartaEnElTablero(byte x, byte y, List<CartaDeTunel> cartasEnElTablero) {
-        this.x = x;
-        this.y = y;
-
-        // Conectar la carta con las contiguas
-        for (CartaDeTunel otraCarta : cartasEnElTablero) {
-            boolean movimientoValido = true;
-
-            if (otraCarta.getX() == this.x - 1 && otraCarta.getY() == this.y) {
-
-                movimientoValido = this.setOeste(otraCarta) && otraCarta.setEste(this);
-
-            } else if (otraCarta.getX() == this.x + 1 && otraCarta.getY() == this.y) {
-
-                movimientoValido =this.setEste(otraCarta) && otraCarta.setOeste(this);
-
-            } if (otraCarta.getX() == this.x && otraCarta.getY() == this.y - 1) {
-
-                movimientoValido = this.setNorte(otraCarta) && otraCarta.setSur(this);
-
-            } else if (otraCarta.getX() == this.x && otraCarta.getY() == this.y + 1) {
-
-                movimientoValido = this.setSur(otraCarta) && otraCarta.setNorte(this);
-            }
-
-            if (!movimientoValido) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public void derrumbar() {
         this.norte.setSur(null);
         this.norte = null;
@@ -177,33 +149,76 @@ public class CartaDeTunel implements CartaDeJuego {
         this.este.setOeste(null);
         this.este = null;
 
-        this.x = -1;
-        this.y = -1;
+        this.setPosicion(-1, -1);
     }
 
     public boolean colisionaCon(CartaDeJuego carta) {
-        return this.x == carta.getX() && this.y == carta.getY();
+        return this.getX() == carta.getX() && this.getY() == carta.getY();
     }
 
     public boolean admiteConexion(CartaDeTunel carta) {
         if (!colisionaCon(carta)) {
-            if (this.y < carta.getY()) {
-                return this.entradas.contains(Entrada.SUR)
-                        && carta.getEntradas().contains(Entrada.NORTE);
+            if (this.getY() < carta.getY()) {
+                return (this.entradas.contains(Entrada.SUR)
+                        && carta.getEntradas().contains(Entrada.NORTE))
+                        || (!this.entradas.contains(Entrada.SUR)
+                                && !carta.getEntradas().contains(Entrada.NORTE));
             }
-            if (this.y > carta.getY()) {
-                return this.entradas.contains(Entrada.NORTE)
-                        && carta.getEntradas().contains(Entrada.SUR);
+            if (this.getY() > carta.getY()) {
+                return (this.entradas.contains(Entrada.NORTE)
+                        && carta.getEntradas().contains(Entrada.SUR))
+                        || (!this.entradas.contains(Entrada.NORTE)
+                        && !carta.getEntradas().contains(Entrada.SUR));
             }
-            if (this.x < carta.getX()) {
-                return this.entradas.contains(Entrada.ESTE)
-                        && carta.getEntradas().contains(Entrada.OESTE);
+            if (this.getX() < carta.getX()) {
+                return (this.entradas.contains(Entrada.ESTE)
+                        && carta.getEntradas().contains(Entrada.OESTE))
+                        || (!this.entradas.contains(Entrada.ESTE)
+                                && !carta.getEntradas().contains(Entrada.OESTE));
             }
-            if (this.x > carta.getX()) {
-                return this.entradas.contains(Entrada.OESTE)
-                        && carta.getEntradas().contains(Entrada.ESTE);
+            if (this.getX() > carta.getX()) {
+                return (this.entradas.contains(Entrada.OESTE)
+                        && carta.getEntradas().contains(Entrada.ESTE))
+                        || (!this.entradas.contains(Entrada.OESTE)
+                                && !carta.getEntradas().contains(Entrada.ESTE));
             }
         }
         return false;
+    }
+
+    public void inicializar() {
+        if (this.tipo != TipoCartaTunel.INICIO && this.tipo != TipoCartaTunel.DESTINO_ORO
+                && this.tipo != TipoCartaTunel.DESTINO_PIEDRA) {
+            this.setPosicion(null, null);
+        }
+        this.setNorte(null);
+        this.setSur(null);
+        this.setEste(null);
+        this.setOeste(null);
+    }
+
+    public boolean conectar(CartaDeTunel otraCarta) {
+        if (otraCarta.getX() == this.getX() - 1 && otraCarta.getY() == this.getY()) {
+
+            return  this.setOeste(otraCarta) && otraCarta.setEste(this);
+
+        } else if (otraCarta.getX() == this.getX() + 1 && otraCarta.getY() == this.getY()) {
+
+            return this.setEste(otraCarta) && otraCarta.setOeste(this);
+
+        } if (otraCarta.getX() == this.getX() && otraCarta.getY() == this.getY() - 1) {
+
+            return this.setNorte(otraCarta) && otraCarta.setSur(this);
+
+        } else if (otraCarta.getX() == this.getX() && otraCarta.getY() == this.getY() + 1) {
+
+            return this.setSur(otraCarta) && otraCarta.setNorte(this);
+        }
+        return false;
+    }
+
+    public boolean sonContiguas(CartaDeTunel carta) {
+        return Math.abs(this.getX() - carta.getX()) == 1
+                || Math.abs(this.getY() - carta.getY()) == 1;
     }
 }

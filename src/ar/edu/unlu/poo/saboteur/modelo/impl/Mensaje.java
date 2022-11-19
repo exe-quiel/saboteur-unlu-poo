@@ -24,6 +24,13 @@ public class Mensaje implements Serializable {
         return this.jugador == null;
     }
 
+    public String obtenerOrigen() {
+        if (esDelSistema()) {
+            return "SISTEMA";
+        }
+        return this.jugador.getId();
+    }
+
     public IJugadorBase getJugador() {
         return jugador;
     }

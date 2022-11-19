@@ -14,13 +14,13 @@ public interface IJuego extends IObservableRemoto {
 
     public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException;
 
-    public void jugarCarta(CartaDeAccion carta);
+    public void jugarCarta(CartaDeAccion carta) throws RemoteException;
 
     public void enviarMensaje(Mensaje mensaje) throws RemoteException;
 
     public List<Mensaje> getMensajes() throws RemoteException;
 
-    public String generarIdJugador() throws RemoteException;
+    public IJugador generarJugador() throws RemoteException;
 
     public List<IJugador> getDatosJugadores() throws RemoteException;
 
@@ -28,7 +28,7 @@ public interface IJuego extends IObservableRemoto {
 
     public void marcarListo(IJugador jugador) throws RemoteException;
 
-    public void descartar(CartaDeJuego carta);
+    public void descartar(CartaDeJuego carta) throws RemoteException;
 
-    public CartaDeJuego tomarCarta();
+    public CartaDeJuego tomarCarta() throws RemoteException;
 }
