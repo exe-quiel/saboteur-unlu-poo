@@ -50,7 +50,8 @@ public class Juego extends ObservableRemoto implements IJuego {
     /**
      * Genera las instancias de las cartas a partir de los archivos y las coloca en el mazo.
      * 
-     * También se guarda las referencias a las cartas iniciales (carta de inicio y las tres cartas de destino)
+     * También se guarda las referencias a las cartas iniciales (carta de inicio y las tres
+     * cartas de destino)
      * 
      */
     private void cargarCartas() {
@@ -64,7 +65,8 @@ public class Juego extends ObservableRemoto implements IJuego {
                     this.cartaDeInicio = cartaDeTunel;
                     this.agregarAlTablero(cartaDeTunel, null);
                     agregarAlMazo = false;
-                } else if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
+                } else if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO
+                        || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
                     this.cartasDeDestino.add(cartaDeTunel);
                     this.agregarAlTablero(cartaDeTunel, null);
                     agregarAlMazo = false;
@@ -84,9 +86,9 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     private boolean validarPosicion(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
-        return this.validarColision(carta) && cartasContiguas
-                .stream()
-                .allMatch(cartaContigua -> cartaContigua.admiteConexion(carta));
+        return this.validarColision(carta)
+                && cartasContiguas.stream().allMatch(cartaContigua -> cartaContigua.admiteConexion(carta))
+                && cartasContiguas.stream().anyMatch(cartaContigua -> cartaContigua.admiteConexionEstricta(carta) && cartaContigua.estaConectadaConCarta(cartaDeInicio));
     }
 
     @Override
@@ -124,7 +126,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             }
         }
     
-        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", this.obtenerJugadorDelTurnoActual(), jugadorDestino.getId(), carta);
+        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", this.obtenerJugadorDelTurnoActual().getId(), jugadorDestino.getId(), carta);
         this.enviarMensaje(new Mensaje(null, mensaje));
     
         incrementarTurno();
@@ -195,9 +197,9 @@ public class Juego extends ObservableRemoto implements IJuego {
     @Override
     public IJugador generarJugador() throws RemoteException {
         String idJugador = "Jugador-" + indiceIdJugador;
-        //this.notificarObservadores(new Evento(TipoEvento.NUEVO_JUGADOR));
         Jugador jugador = new Jugador(idJugador);
         jugadores.add(jugador);
+        this.notificarObservadores(new Evento(TipoEvento.JUGADOR_ENTRA, this.jugadores));
         indiceIdJugador++;
         return jugador;
     }
@@ -210,18 +212,18 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public List<IJugador> getDatosJugadores() throws RemoteException {
+    public List<IJugador> obtenerJugadores() throws RemoteException {
         return jugadores;
     }
 
     @Override
-    public void marcarListo(IJugador jugador) throws RemoteException {
-        IJugador jugadorServidor = this.obtenerJugadorAPartirDeCliente(jugador);
-        jugadorServidor.marcarListo();
+    public void marcarListo(IJugador jugadorCliente) throws RemoteException {
+        IJugador jugador = this.obtenerJugadorAPartirDeCliente(jugadorCliente);
+        jugador.marcarListo();
 
         System.out.println("[" + jugador.getId() + "] está listo");
 
-        if (jugadores.stream().allMatch(IJugador::getListo)) {
+        if (jugadores.stream().allMatch(IJugador::estaListo)) {
             comenzarJuego();
         }
     }
@@ -239,7 +241,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
         this.inicializarRonda();
 
-        Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores);
+        Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores, this.tablero);
         this.notificarObservadores(evento);
         this.enviarMensaje(new Mensaje(null, "Comenzó el juego"));
     }
@@ -302,21 +304,34 @@ public class Juego extends ObservableRemoto implements IJuego {
      * 
      * Por lo tanto, hay que obtener el objeto correspondiente al que nos envió el cliente.
      * 
-     * @param jugadorCliente
+     * @param jugadorCliente jugador que proviene del cliente
      * @return jugador correspondiente en la lista de jugadores del servidor
      */
     private IJugador obtenerJugadorAPartirDeCliente(IJugador jugadorCliente) {
         return this.jugadores
                 .stream()
-                .filter(j -> j.equals(jugadorCliente))
+                .filter(jugador -> jugador.equals(jugadorCliente))
                 .findFirst()
-                .orElse(null);
+                .get();
     }
 
 
     @Override
-    public int[][] getGrilla() throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+    public List<CartaDeTunel> obtenerTablero() throws RemoteException {
+        return this.tablero;
+    }
+
+    @Override
+    public void salir(IJugador jugadorCliente) throws RemoteException {
+        IJugador jugador = this.obtenerJugadorAPartirDeCliente(jugadorCliente);
+        this.jugadores.remove(jugador);
+        try {
+            this.notificarObservadores(new Evento(TipoEvento.JUGADOR_SALE, this.jugadores));
+        } catch (RemoteException e) {
+            // No hay manera de quitar el observador que se fue
+            // porque la librería no da acceso a los observadores
+            // (permite removerlos pero no hay forma de saber cuál es el que se fue)
+            e.printStackTrace();
+        }
     }
 }

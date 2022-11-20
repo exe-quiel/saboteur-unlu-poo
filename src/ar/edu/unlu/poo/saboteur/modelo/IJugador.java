@@ -16,7 +16,7 @@ public interface IJugador extends IJugadorBase {
 
     public void marcarListo();
 
-    public boolean getListo();
+    public boolean estaListo();
 
     public void recibirCartas(List<CartaDeJuego> mano);
 

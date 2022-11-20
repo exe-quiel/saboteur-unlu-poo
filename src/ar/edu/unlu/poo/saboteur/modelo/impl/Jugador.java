@@ -83,7 +83,7 @@ public class Jugador implements IJugador, Serializable {
         this.listo = true;
     }
 
-    public boolean getListo() {
+    public boolean estaListo() {
         return listo;
     }
 

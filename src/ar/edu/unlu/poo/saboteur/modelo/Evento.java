@@ -18,6 +18,7 @@ public class Evento implements Serializable {
     private TipoEvento tipoEvento;
     private CartaDeJuego carta;
     private List<IJugador> jugadores;
+    private List<CartaDeTunel> tablero;
 
     public Evento(TipoEvento tipoEvento) {
         super();
@@ -34,6 +35,13 @@ public class Evento implements Serializable {
         super();
         this.tipoEvento = tipoEvento;
         this.jugadores = jugadores;
+    }
+
+    public Evento(TipoEvento tipoEvento, List<IJugador> jugadores, List<CartaDeTunel> tablero) {
+        super();
+        this.tipoEvento = tipoEvento;
+        this.jugadores = jugadores;
+        this.tablero = tablero;
     }
 
     /**

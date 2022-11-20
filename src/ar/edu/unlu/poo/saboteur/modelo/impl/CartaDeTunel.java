@@ -186,6 +186,35 @@ public class CartaDeTunel extends CartaDeJuego {
         return false;
     }
 
+    /**
+     * Similar a this{@link #admiteConexion(CartaDeTunel)}, pero verifica específicamente
+     * que se forme un tunel entre las dos cartas
+     * 
+     * @param carta carta a comparar
+     * @return true si se forma un túnel entre las dos cartas
+     */
+    public boolean admiteConexionEstricta(CartaDeTunel carta) {
+        if (!colisionaCon(carta)) {
+            if (this.getY() < carta.getY()) {
+                return this.entradas.contains(Entrada.SUR)
+                        && carta.getEntradas().contains(Entrada.NORTE);
+            }
+            if (this.getY() > carta.getY()) {
+                return this.entradas.contains(Entrada.NORTE)
+                        && carta.getEntradas().contains(Entrada.SUR);
+            }
+            if (this.getX() < carta.getX()) {
+                return this.entradas.contains(Entrada.ESTE)
+                        && carta.getEntradas().contains(Entrada.OESTE);
+            }
+            if (this.getX() > carta.getX()) {
+                return this.entradas.contains(Entrada.OESTE)
+                        && carta.getEntradas().contains(Entrada.ESTE);
+            }
+        }
+        return false;
+    }
+
     public void inicializar() {
         if (this.tipo != TipoCartaTunel.INICIO && this.tipo != TipoCartaTunel.DESTINO_ORO
                 && this.tipo != TipoCartaTunel.DESTINO_PIEDRA) {
@@ -219,6 +248,6 @@ public class CartaDeTunel extends CartaDeJuego {
 
     public boolean sonContiguas(CartaDeTunel carta) {
         return Math.abs(this.getX() - carta.getX()) == 1
-                || Math.abs(this.getY() - carta.getY()) == 1;
+                && Math.abs(this.getY() - carta.getY()) == 1;
     }
 }

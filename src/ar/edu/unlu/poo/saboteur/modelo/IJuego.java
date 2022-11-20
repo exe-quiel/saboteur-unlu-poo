@@ -22,13 +22,15 @@ public interface IJuego extends IObservableRemoto {
 
     public IJugador generarJugador() throws RemoteException;
 
-    public List<IJugador> getDatosJugadores() throws RemoteException;
+    public List<IJugador> obtenerJugadores() throws RemoteException;
 
-    public int[][] getGrilla() throws RemoteException;
+    public List<CartaDeTunel> obtenerTablero() throws RemoteException;
 
-    public void marcarListo(IJugador jugador) throws RemoteException;
+    public void marcarListo(IJugador jugadorCliente) throws RemoteException;
 
     public void descartar(CartaDeJuego carta) throws RemoteException;
 
     public CartaDeJuego tomarCarta() throws RemoteException;
+
+    public void salir(IJugador jugadorCliente) throws RemoteException ;
 }

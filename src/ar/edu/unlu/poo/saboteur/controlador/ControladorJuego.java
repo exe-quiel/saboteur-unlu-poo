@@ -33,9 +33,15 @@ public class ControladorJuego implements IControladorRemoto {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
             case JUGADOR_ENTRA:
-                //vista.actualizarJugadores(this.chat.getDatosJugadores());
+                // Null-check porque cuando recién entra el jugador,
+                // la vista aún no está seteada
+                // (recibe el evento de su propio ingreso al juego)
+                if (vista != null) {
+                    vista.actualizarJugadores(evento.getJugadores());
+                }
                 break;
             case JUGADOR_SALE:
+                vista.actualizarJugadores(evento.getJugadores());
                 break;
             case USA_CARTA:
                 //vista.mostrarGrilla(evento.getCarta());
@@ -112,9 +118,17 @@ public class ControladorJuego implements IControladorRemoto {
         return null;
     }
 
+    public void salir() {
+        try {
+            this.juego.salir(this.vista.getJugador());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<IJugador> obtenerNombresJugadores() {
         try {
-            return this.juego.getDatosJugadores();
+            return this.juego.obtenerJugadores();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -129,8 +143,26 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
+    public List<IJugador> obtenerJugadores() {
+        try {
+            return this.juego.obtenerJugadores();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
         this.juego = (IJuego) arg0;
+    }
+
+    public List<CartaDeTunel> obtenerTablero() {
+        try {
+            return this.juego.obtenerTablero();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

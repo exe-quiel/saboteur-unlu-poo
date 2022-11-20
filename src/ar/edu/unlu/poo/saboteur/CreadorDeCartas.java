@@ -98,13 +98,13 @@ public class CreadorDeCartas {
                 contadorCartaDestino++;
                 switch (contadorCartaDestino) {
                 case 1:
-                    cartaDeTunel.setPosicion(9, 0);
+                    cartaDeTunel.setPosicion(8, 0);
                     break;
                 case 2:
-                    cartaDeTunel.setPosicion(9, 2);
+                    cartaDeTunel.setPosicion(8, 2);
                     break;
                 case 3:
-                    cartaDeTunel.setPosicion(9, 4);
+                    cartaDeTunel.setPosicion(8, 4);
                     break;
                 } 
             }

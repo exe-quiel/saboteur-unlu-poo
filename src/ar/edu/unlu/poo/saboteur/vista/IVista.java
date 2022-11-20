@@ -16,7 +16,11 @@ public interface IVista {
 
     public void actualizarJugadores(List<IJugador> jugadores);
 
-    public void mostrarTablero(CartaDeTunel carta);
+    public void actualizarJugadores();
+
+    public void actualizarTablero(List<CartaDeTunel> tablero);
+
+    public void actualizarTablero();
 
     public void iniciarJuego(Evento evento);
 
