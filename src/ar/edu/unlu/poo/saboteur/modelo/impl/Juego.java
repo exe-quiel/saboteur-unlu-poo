@@ -304,6 +304,13 @@ public class Juego extends ObservableRemoto implements IJuego {
                 carta.inicializar();
                 this.mazo.add(carta);
             }
+
+            Iterator<CartaDeAccion> herramientasRotasIterator = jugador.getHerramientasRotas().iterator();
+            while (herramientasRotasIterator.hasNext()) {
+                CartaDeAccion carta = herramientasRotasIterator.next();
+                herramientasRotasIterator.remove();
+                this.mazo.add(carta);
+            }
         }
     }
 
