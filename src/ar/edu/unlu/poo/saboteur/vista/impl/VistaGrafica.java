@@ -364,17 +364,17 @@ public class VistaGrafica implements IVista {
     @Override
     public void iniciarJuego(Evento evento) {
         botonListo.setEnabled(false);
-        this.jugadorCliente = evento.obtenerJugadorCorrespondiente(jugadorCliente);
         southPanel.remove(botonListo);
         // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
         southPanel.revalidate();
         southPanel.repaint();
 
-        this.actualizarJugadores();
-        this.actualizarMano();
+        this.actualizar();
     }
 
     private void actualizarMano() {
+        southPanel.removeAll();
+
         for (CartaDeJuego carta : this.jugadorCliente.getMano()) {
             CartaMano cartaLabel = new CartaMano(carta, controladorJuego);
             cartaLabel.setHorizontalAlignment(JLabel.CENTER);
