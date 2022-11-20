@@ -65,7 +65,7 @@ public class VistaGrafica implements IVista {
 
     private JList<IJugador> listaDeJugadores;
 
-    private JList<Mensaje> historial;
+    private JList<Mensaje> chat;
 
     public VistaGrafica(ControladorJuego controladorJuego, IJugador jugadorCliente) {
         this.jugadorCliente = jugadorCliente;
@@ -82,8 +82,8 @@ public class VistaGrafica implements IVista {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setTitle("Saboteur - " + this.jugadorCliente.getId());
 
-            historial = new JList<>();
-            historial.setCellRenderer(new DefaultListCellRenderer() {
+            chat = new JList<>();
+            chat.setCellRenderer(new DefaultListCellRenderer() {
 
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -147,9 +147,9 @@ public class VistaGrafica implements IVista {
 
             tablero = new JPanel();
             tablero.setLayout(new GridLayout(5, 9));
-            for (byte y = 0; y < 5; y++) {
-                for (byte x = 0; x < 9; x++) {
-                    LabelCarta label = new LabelCarta(null, controladorJuego);
+            for (int y = 0; y < 5; y++) {
+                for (int x = 0; x < 9; x++) {
+                    CartaTablero label = new CartaTablero(null, x, y, controladorJuego);
                     label.setHorizontalAlignment(JLabel.CENTER);
                     label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
                     tablero.add(label);
@@ -189,10 +189,19 @@ public class VistaGrafica implements IVista {
             listaDeJugadores.addListSelectionListener(evento -> {
                 IJugador jugador = (IJugador) evento.getSource();
                 boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
-                if (esMiTurno && cartaSeleccionada != null && cartaSeleccionada instanceof CartaDeAccion) {
-                    controladorJuego.jugarCarta((IJugador) jugador, (CartaDeAccion) cartaSeleccionada);
+                if (esMiTurno) {
+                    if (cartaSeleccionada != null) {
+                        if (cartaSeleccionada instanceof CartaDeAccion) {
+                            System.out.println("Hiciste clic en el usuario " + jugador.getId());
+                            controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
+                        } else {
+                            System.err.println("No seleccionaste una carta de acción");
+                        }
+                    } else {
+                        System.err.println("No seleccionaste ninguna carta");
+                    }
                 } else {
-                    System.out.println("No es tu turno todavía");
+                    System.err.println("No es tu turno todavía");
                 }
                 listaDeJugadores.clearSelection();
             });
@@ -204,7 +213,7 @@ public class VistaGrafica implements IVista {
             JComponent panelChat = new JPanel();
             // panelChat.setSize(100, 500);
             panelChat.setLayout(new GridLayout(2, 1));
-            panelChat.add(historial);
+            panelChat.add(chat);
 
             JComponent panelInferiorChat = new JPanel();
             panelInferiorChat.setLayout(new FlowLayout());
@@ -217,11 +226,8 @@ public class VistaGrafica implements IVista {
 
             southPanel = new JPanel();
             southPanel.setLayout(new GridLayout(1, 10));
-            JLabel jLabel = new JLabel("cartas");
-            southPanel.add(jLabel);
             southPanel.add(botonListo);
             southPanel.setPreferredSize(new Dimension(0, 200));
-            // placeholder.setSize(500, 200);
             panelPrincipal.add(southPanel, BorderLayout.SOUTH);
             frame.setVisible(true);
         });
@@ -252,7 +258,7 @@ public class VistaGrafica implements IVista {
     @Override
     public void actualizarMensajes() {
         List<Mensaje> mensajes = this.controladorJuego.obtenerMensajes();
-        this.historial.setModel(new AbstractListModel<Mensaje>() {
+        this.chat.setModel(new AbstractListModel<Mensaje>() {
 
             @Override
             public int getSize() {
@@ -333,7 +339,11 @@ public class VistaGrafica implements IVista {
     }
     */
 
-    public class LabelCarta extends JLabel {
+    /**
+     * Representa un espacio (slot) en el tablero, que puede estar libre o no.
+     *
+     */
+    public class CartaTablero extends JLabel {
 
         /**
          * 
@@ -341,10 +351,14 @@ public class VistaGrafica implements IVista {
         private static final long serialVersionUID = 5370723875059488045L;
 
         private CartaDeJuego carta;
+        private Integer x;
+        private Integer y;
 
-        public LabelCarta(CartaDeJuego carta, ControladorJuego controlador) {
-            super(carta == null ? "X" : String.valueOf(carta.getId()));
-            this.carta = carta;
+        public CartaTablero(CartaDeJuego carta, Integer x, Integer y, ControladorJuego controlador) {
+            super();
+            this.setCarta(carta);
+            this.x = x;
+            this.y = y;
 
             addMouseListener(new MouseAdapter() {
 
@@ -352,28 +366,40 @@ public class VistaGrafica implements IVista {
                 public void mouseClicked(MouseEvent event) {
                     System.out.println("[" + jugadorCliente.getId() + "] -> " + esMiTurno);
                     boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
-                    boolean estaLibre = ((LabelCarta) event.getComponent()).getCarta() == null;
-                    if (esMiTurno && cartaSeleccionada != null && estaLibre) {
-                        if (cartaSeleccionada instanceof CartaDeTunel) {
-                            controlador.jugarCarta((CartaDeTunel) cartaSeleccionada);
-                        } else if (cartaSeleccionada instanceof CartaDeAccion) {
-                            controlador.jugarCarta((CartaDeTunel) cartaSeleccionada);
-                        }
-                        Component componentToRemove = null;
-                        for (Component component : southPanel.getComponents()) {
-                            if (component instanceof JLabel) {
-                                CartaDeJuego carta = ((LabelCarta) component).getCarta();
-                                if (carta == cartaSeleccionada) {
-                                    componentToRemove = component;
+                    boolean estaLibre = ((CartaTablero) event.getComponent()).getCarta() == null;
+                    if (esMiTurno) {
+                        if (cartaSeleccionada != null) {
+                            if (estaLibre) {
+                                if (cartaSeleccionada instanceof CartaDeTunel) {
+                                    CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaSeleccionada;
+                                    cartaDeTunel.setPosicion(x, y);
+                                    controlador.jugarCarta(cartaDeTunel);
+                                } else if (cartaSeleccionada instanceof CartaDeAccion) {
+                                    controlador.jugarCarta((CartaDeAccion) cartaSeleccionada);
                                 }
+                                Component componentToRemove = null;
+                                for (Component component : southPanel.getComponents()) {
+                                    if (component instanceof JLabel) {
+                                        CartaDeJuego carta = ((CartaMano) component).getCarta();
+                                        if (carta == cartaSeleccionada) {
+                                            componentToRemove = component;
+                                        }
+                                    }
+                                }
+                                if (componentToRemove != null) {
+                                    southPanel.remove(componentToRemove);
+                                    southPanel.revalidate();
+                                    southPanel.repaint();
+                                }
+                                cartaSeleccionada = null;
+                            } else {
+                                System.err.println("Ya hay una carta en ese lugar");
                             }
+                        } else {
+                            System.err.println("Tenés que seleccionar una carta primero");
                         }
-                        if (componentToRemove != null) {
-                            southPanel.remove(componentToRemove);
-                        }
-                        cartaSeleccionada = null;
                     } else {
-                        System.out.println("No es tu turno todavía, tenés que seleccionar una carta primero o no está libre");
+                        System.err.println("No es tu turno todavía");
                     }
                 }
 
@@ -391,6 +417,74 @@ public class VistaGrafica implements IVista {
 
         public CartaDeJuego getCarta() {
             return carta;
+        }
+
+        public void setCarta(CartaDeJuego carta) {
+            // TODO EXE - Generar texto que represente las entradas y el centro de la carta
+            this.carta = carta;
+            if (carta == null) {
+                this.setText("X");
+            } else {
+                this.setText(String.valueOf(carta.getId()));
+                carta.setPosicion(x, y);
+            }
+        }
+    }
+
+    /**
+     * Representa una carta en la mano del jugador.
+     *
+     */
+    public class CartaMano extends JLabel {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 5370723875059488045L;
+
+        private CartaDeJuego carta;
+
+        public CartaMano(CartaDeJuego carta, ControladorJuego controlador) {
+            super();
+            this.setCarta(carta);
+
+            addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent event) {
+                    System.out.println("[" + jugadorCliente.getId() + "] -> " + esMiTurno);
+                    boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
+                    if (esMiTurno) {
+                        cartaSeleccionada = carta;
+                    } else {
+                        System.err.println("No es tu turno todavía");
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(LABEL_BORDER);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent event) {
+                    ((JLabel) event.getComponent()).setBorder(null);
+                }
+            });
+        }
+
+        public CartaDeJuego getCarta() {
+            return carta;
+        }
+
+        public void setCarta(CartaDeJuego carta) {
+            // TODO EXE - Generar texto que represente las entradas y el centro de la carta
+            this.carta = carta;
+            if (carta == null) {
+                this.setText("X");
+            } else {
+                this.setText(String.valueOf(carta.getId()));
+            }
         }
     }
 
@@ -492,31 +586,8 @@ public class VistaGrafica implements IVista {
 
     private void mostarMano() {
         for (CartaDeJuego carta : this.jugadorCliente.getMano()) {
-            LabelCarta cartaLabel = new LabelCarta(carta, controladorJuego);
+            CartaMano cartaLabel = new CartaMano(carta, controladorJuego);
             cartaLabel.setHorizontalAlignment(JLabel.CENTER);
-            cartaLabel.addMouseListener(new MouseAdapter() {
-
-                @Override
-                public void mouseClicked(MouseEvent event) {
-                    boolean esMiTurno = tablero.getCursor().getType() != Cursor.WAIT_CURSOR;
-                    if (esMiTurno) {
-                        LabelCarta carta = (LabelCarta) event.getComponent();
-                        cartaSeleccionada = carta.getCarta();
-                    } else {
-                        System.out.println("No es tu turno todavía");
-                    }
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent event) {
-                    ((JLabel) event.getComponent()).setBorder(LABEL_BORDER);
-                }
-
-                @Override
-                public void mouseExited(MouseEvent event) {
-                    ((JLabel) event.getComponent()).setBorder(null);
-                }
-            });
             southPanel.add(cartaLabel);
         }
     }

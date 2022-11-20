@@ -5,7 +5,6 @@ import java.util.List;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
-import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
 
 public interface IVista {
 

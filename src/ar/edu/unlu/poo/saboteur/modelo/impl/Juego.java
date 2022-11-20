@@ -62,11 +62,11 @@ public class Juego extends ObservableRemoto implements IJuego {
                 CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaDeJuego;
                 if (cartaDeTunel.getTipo() == TipoCartaTunel.INICIO) {
                     this.cartaDeInicio = cartaDeTunel;
-                    this.agregarAlTablero(cartaDeTunel);
+                    this.agregarAlTablero(cartaDeTunel, null);
                     agregarAlMazo = false;
                 } else if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
                     this.cartasDeDestino.add(cartaDeTunel);
-                    this.agregarAlTablero(cartaDeTunel);
+                    this.agregarAlTablero(cartaDeTunel, null);
                     agregarAlMazo = false;
                 }
             }
@@ -77,7 +77,9 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     private void agregarAlTablero(CartaDeTunel cartaDeTunel, List<CartaDeTunel> cartasContiguas) {
-        cartasContiguas.forEach(cartaContigua -> cartaContigua.conectar(cartaDeTunel));
+        if (cartasContiguas != null) {
+            cartasContiguas.forEach(cartaContigua -> cartaContigua.conectar(cartaDeTunel));
+        }
         this.tablero.add(cartaDeTunel);
     }
 
@@ -94,7 +96,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         if (this.validarPosicion(carta, cartasContiguas)) {
             this.agregarAlTablero(carta, cartasContiguas);
             try {
-                incrementarTurno();
+                this.incrementarTurno();
                 this.notificarObservadores(new Evento(jugadores.get(indiceJugadorTurno), carta));
             } catch (RemoteException e) {
                 e.printStackTrace();
