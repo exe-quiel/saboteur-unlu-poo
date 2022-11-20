@@ -14,6 +14,10 @@ public class Mensaje implements Serializable {
     private IJugadorBase jugador;
     private String texto;
 
+    public Mensaje(String texto) {
+        this(null, texto);
+    }
+
     public Mensaje(IJugadorBase jugador, String texto) {
         super();
         this.jugador = jugador;

@@ -78,32 +78,63 @@ public class Juego extends ObservableRemoto implements IJuego {
         }
     }
 
-    private void agregarAlTablero(CartaDeTunel cartaDeTunel, List<CartaDeTunel> cartasContiguas) {
+    private void agregarAlTablero(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
         if (cartasContiguas != null) {
-            cartasContiguas.forEach(cartaContigua -> cartaContigua.conectar(cartaDeTunel));
+            cartasContiguas.forEach(cartaContigua -> cartaContigua.conectar(carta));
         }
-        this.tablero.add(cartaDeTunel);
+        this.tablero.add(carta);
+        if (cartasContiguas != null) {
+            // Si cartasContiguas es null, quiere decir que estamos colocando las cartas iniciales
+            // y por lo tanto no hay jugadores todavía
+            this.removerCartaDeLaMano(carta);
+        }
+    }
+
+    private void removerCartaDeLaMano(CartaDeJuego carta) {
+        if (this.obtenerJugadorDelTurnoActual().getMano().remove(carta)) {
+            System.out.println("Se removió la carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getId());
+        } else {
+            System.err.println("Error al remover al carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getId());
+        }
+    }
+
+    private CartaDeTunel obtenerCartaDeTunelAPartirDeCliente(CartaDeTunel cartaDeTunel) {
+        // TODO EXE - Unir este método y el de abajo
+        return this.obtenerJugadorDelTurnoActual().getMano()
+                .stream()
+                .filter(carta -> carta.equals(cartaDeTunel))
+                .map(carta -> (CartaDeTunel) carta)
+                .findFirst()
+                .get();
+    }
+
+    private CartaDeAccion obtenerCartaDeAccionAPartirDeCliente(CartaDeAccion cartaDeAccion) {
+        return this.obtenerJugadorDelTurnoActual().getMano()
+                .stream()
+                .filter(carta -> carta.equals(cartaDeAccion))
+                .map(carta -> (CartaDeAccion) carta)
+                .findFirst()
+                .get();
     }
 
     private boolean validarPosicion(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
-        return this.validarColision(carta)
+        boolean posicionEsValida = this.validarColision(carta)
                 && cartasContiguas.stream().allMatch(cartaContigua -> cartaContigua.admiteConexion(carta))
                 && cartasContiguas.stream().anyMatch(cartaContigua -> cartaContigua.admiteConexionEstricta(carta) && cartaContigua.estaConectadaConCarta(cartaDeInicio));
+        this.tablero.forEach(cartaTablero -> cartaTablero.setYaRevisada(false));
+        return posicionEsValida;
     }
 
     @Override
-    public void jugarCarta(CartaDeTunel carta) {
-        System.out.println(String.format("Carta de túnel en (%s,%s)", carta.getX(), carta.getY()));
+    public boolean jugarCarta(CartaDeTunel cartaDeTunelCliente) {
+        System.out.println(String.format("Carta de túnel en (%s,%s)", cartaDeTunelCliente.getX(), cartaDeTunelCliente.getY()));
+        CartaDeTunel carta = this.obtenerCartaDeTunelAPartirDeCliente(cartaDeTunelCliente);
         List<CartaDeTunel> cartasContiguas = this.obtenerCartasContiguas(carta);
         if (this.validarPosicion(carta, cartasContiguas)) {
             this.agregarAlTablero(carta, cartasContiguas);
-            try {
-                this.incrementarTurno();
-                this.notificarObservadores(new Evento(jugadores.get(indiceJugadorTurno), carta));
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            return true;
         }
+        return false;
     }
 
     private List<CartaDeTunel> obtenerCartasContiguas(CartaDeTunel carta) {
@@ -114,48 +145,39 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException {
-    
+    public boolean jugarCarta(IJugador jugadorDestinoCliente, CartaDeAccion cartaCliente) throws RemoteException {
+        IJugador jugadorDestino = this.obtenerJugadorAPartirDeCliente(jugadorDestinoCliente);
+        IJugador jugadorActual = this.obtenerJugadorDelTurnoActual();
+        CartaDeAccion carta = this.obtenerCartaDeAccionAPartirDeCliente(cartaCliente);
         if (carta.esCartaDeHerramientaRota()) {
             if (!jugadorDestino.getHerramientasRotas().contains(carta)) {
                 jugadorDestino.romperHerramienta(carta);
+                jugadorActual.removerCartaDeLaMano(carta);
             }
         } else if (carta.esCartaDeHerramientaReparada()) {
-            if (jugadorDestino.repararHerramienta(carta)) {
+            CartaDeAccion herramientaReparada = jugadorDestino.repararHerramienta(carta);
+            if (herramientaReparada != null) {
+                descartar(herramientaReparada, jugadorDestino);
                 descartar(carta);
             }
         }
-    
-        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", this.obtenerJugadorDelTurnoActual().getId(), jugadorDestino.getId(), carta);
-        this.enviarMensaje(new Mensaje(null, mensaje));
-    
-        incrementarTurno();
-        try {
-            this.notificarObservadores(new Evento(jugadores.get(indiceJugadorTurno), jugadorDestino, carta));
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+
+        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", jugadorActual.getId(), jugadorDestino.getId(), carta);
+        this.enviarMensaje(new Mensaje(mensaje));
+        return true;
     }
 
     @Override
-    public void jugarCarta(CartaDeAccion carta) throws RemoteException {
+    public boolean jugarCarta(CartaDeAccion carta) throws RemoteException {
         // TODO EXE - Podría desambiguar esto en dos métodos, uno que reciba ICartaDeDerrumbe
         //  y otro para ICartaDeMapa
         if (carta.getTipos().get(0) == TipoCartaAccion.DERRUMBE) {
             CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(carta);
             if (cartaADerrumbar != null) {
                 cartaADerrumbar.derrumbar();
-                try {
-                    this.descartar(cartaADerrumbar);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-                Evento evento = new Evento(TipoEvento.CARTA_DERRUMBADA, cartaADerrumbar);
-                try {
-                    this.notificarObservadores(evento);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                this.descartarCarta(cartaADerrumbar, this.obtenerJugadorDelTurnoActual());
+            } else {
+                return false;
             }
         } else if (carta.getTipos().get(0) == TipoCartaAccion.MAPA) {
             CartaDeTunel destino = this.obtenerCartaQueColisiona(carta);
@@ -165,9 +187,11 @@ public class Juego extends ObservableRemoto implements IJuego {
                     this.notificarObservadores(evento);
                 } catch (RemoteException e) {
                     e.printStackTrace();
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     private boolean validarColision(CartaDeTunel carta) {
@@ -178,11 +202,10 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void enviarMensaje(Mensaje mensaje) throws RemoteException {
-        System.out.println(String.format("Jugador [%s] dijo [%s]", mensaje.obtenerOrigen(), mensaje.getTexto()));
+        System.out.println(String.format("[%s] dijo [%s]", mensaje.obtenerOrigen(), mensaje.getTexto()));
         this.mensajes.add(mensaje);
         try {
-            //this.notificarObservadores(new Evento(TipoEvento.NUEVO_MENSAJE));
-            Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE, jugadores.get(indiceJugadorTurno));
+            Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE);
             this.notificarObservadores(evento);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -205,10 +228,12 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     private void incrementarTurno() {
+        this.obtenerJugadorDelTurnoActual().cambiarTurno();
         this.indiceJugadorTurno++;
         if (this.jugadores.size() == indiceJugadorTurno) {
             this.indiceJugadorTurno = 0;
         }
+        this.obtenerJugadorDelTurnoActual().cambiarTurno();
     }
 
     @Override
@@ -262,9 +287,28 @@ public class Juego extends ObservableRemoto implements IJuego {
             carta.inicializar();
             this.mazo.add(carta);
         }
+
+        Iterator<CartaDeJuego> descarteIterator = this.pilaDeDescarte.iterator();
+        while (descarteIterator.hasNext()) {
+            CartaDeJuego carta = descarteIterator.next();
+            descarteIterator.remove();
+            carta.inicializar();
+            this.mazo.add(carta);
+        }
+
+        for (IJugador jugador : this.jugadores) {
+            Iterator<CartaDeJuego> manoIterator = jugador.getMano().iterator();
+            while (manoIterator.hasNext()) {
+                CartaDeJuego carta = manoIterator.next();
+                manoIterator.remove();
+                carta.inicializar();
+                this.mazo.add(carta);
+            }
+        }
     }
 
     private void asignarRoles() {
+        // TODO EXE - Implementar distintas probabilidades según la cantidad de jugadores
         Random random = new Random();
         this.jugadores.forEach(jugador -> jugador.setRol(random.nextBoolean()
                 ? RolJugador.SABOTEADOR
@@ -287,17 +331,6 @@ public class Juego extends ObservableRemoto implements IJuego {
         return this.jugadores.get(indiceJugadorTurno);
     }
 
-    @Override
-    public void descartar(CartaDeJuego carta) throws RemoteException {
-        this.obtenerJugadorDelTurnoActual().removerCartaDeLaMano(carta);
-        this.pilaDeDescarte.add(carta);
-    }
-
-    @Override
-    public CartaDeJuego tomarCarta() throws RemoteException {
-        return this.mazo.remove(0);
-    }
-
     /**
      * Este método es necesario porque, al enviar y recibir objetos a través de RMI y deserializarlos,
      * la instancia deserializada ya NO es la misma.
@@ -315,6 +348,36 @@ public class Juego extends ObservableRemoto implements IJuego {
                 .get();
     }
 
+    @Override
+    public boolean descartar(CartaDeJuego carta, IJugador jugadorCliente) throws RemoteException {
+        this.descartarCarta(carta, this.obtenerJugadorAPartirDeCliente(jugadorCliente));
+        return true;
+    }
+
+    @Override
+    public boolean descartar(CartaDeJuego cartaCliente) throws RemoteException {
+        CartaDeJuego carta = this.obtenerCartaDeJuegoAPartirDelCliente(cartaCliente);
+        this.descartarCarta(carta, this.obtenerJugadorDelTurnoActual());
+        return true;
+    }
+
+    private CartaDeJuego obtenerCartaDeJuegoAPartirDelCliente(CartaDeJuego cartaCliente) {
+        return this.obtenerJugadorDelTurnoActual().getMano()
+            .stream()
+            .filter(carta -> carta.equals(cartaCliente))
+            .findFirst()
+            .get();
+    }
+
+    private void descartarCarta(CartaDeJuego carta, IJugador jugador) {
+        jugador.removerCartaDeLaMano(carta);
+        this.pilaDeDescarte.add(carta);
+    }
+
+    @Override
+    public CartaDeJuego tomarCarta() throws RemoteException {
+        return this.mazo.remove(0);
+    }
 
     @Override
     public List<CartaDeTunel> obtenerTablero() throws RemoteException {
@@ -331,6 +394,16 @@ public class Juego extends ObservableRemoto implements IJuego {
             // No hay manera de quitar el observador que se fue
             // porque la librería no da acceso a los observadores
             // (permite removerlos pero no hay forma de saber cuál es el que se fue)
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void terminarTurno(IJugador jugador) throws RemoteException {
+        this.incrementarTurno();
+        try {
+            this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }

@@ -15,6 +15,10 @@ public class CartaDeTunel extends CartaDeJuego {
     private TipoCartaTunel tipo;
     private boolean sinSalida;
     private List<Entrada> entradas;
+    /**
+     * Para ver si está conectada al inicio
+     */
+    private boolean yaRevisada;
 
     private CartaDeTunel norte;
     private CartaDeTunel sur;
@@ -26,6 +30,7 @@ public class CartaDeTunel extends CartaDeJuego {
         this.tipo = tipo;
         this.sinSalida = sinSalida;
         this.entradas = entradas;
+        this.yaRevisada = false;
     }
 
     public TipoCartaTunel getTipo() {
@@ -113,27 +118,33 @@ public class CartaDeTunel extends CartaDeJuego {
     }
 
     public boolean estaConectadaConCarta(CartaDeTunel carta) {
+        if (this.yaRevisada) {
+            return false;
+        }
+
+        boolean estaConectada = false;
         if (this == carta) {
-            return true;
+            estaConectada = true;
         }
 
         if (norte != null && norte.estaConectadaConCarta(carta)) {
-            return true;
+            estaConectada = true;
         }
 
         if (sur != null && sur.estaConectadaConCarta(carta)) {
-            return true;
+            estaConectada = true;
         }
 
         if (este != null && este.estaConectadaConCarta(carta)) {
-            return true;
+            estaConectada = true;
         }
 
         if (oeste != null && oeste.estaConectadaConCarta(carta)) {
-            return true;
+            estaConectada = true;
         }
 
-        return false;
+        this.yaRevisada = true;
+        return estaConectada;
     }
 
     public void derrumbar() {
@@ -249,5 +260,9 @@ public class CartaDeTunel extends CartaDeJuego {
     public boolean sonContiguas(CartaDeTunel carta) {
         return Math.abs(this.getX() - carta.getX()) == 1
                 && Math.abs(this.getY() - carta.getY()) == 1;
+    }
+
+    public void setYaRevisada(boolean yaRevisada) {
+        this.yaRevisada = yaRevisada;
     }
 }

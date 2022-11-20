@@ -23,19 +23,15 @@ public class ControladorJuego implements IControladorRemoto {
 
     }
 
-    public void setVista(IVista vista) {
-        this.vista = vista;
-    }
-
     @Override
     public void actualizar(IObservableRemoto arg0, Object arg1) {
         if (arg1 instanceof Evento) {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
             case JUGADOR_ENTRA:
-                // Null-check porque cuando recién entra el jugador,
-                // la vista aún no está seteada
-                // (recibe el evento de su propio ingreso al juego)
+                // Null-check porque cuando recién ejecuta el main un jugador,
+                // la vista aún no está seteada y tira excepción cuando recibe
+                // el evento de su propio ingreso al juego
                 if (vista != null) {
                     vista.actualizarJugadores(evento.getJugadores());
                 }
@@ -43,16 +39,12 @@ public class ControladorJuego implements IControladorRemoto {
             case JUGADOR_SALE:
                 vista.actualizarJugadores(evento.getJugadores());
                 break;
-            case USA_CARTA:
-                //vista.mostrarGrilla(evento.getCarta());
-                vista.cambiarTurno(evento.getJugadorOrigen());
-                break;
             case NUEVO_MENSAJE:
                 vista.actualizarMensajes();
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
-                vista.cambiarTurno(evento.getJugadorOrigen());
+                vista.actualizar();
                 break;
             case INICIA_JUEGO:
                 vista.iniciarJuego(evento);
@@ -72,19 +64,21 @@ public class ControladorJuego implements IControladorRemoto {
         return null;
     }
 
-    public void jugarCarta(CartaDeTunel carta) {
+    public boolean jugarCarta(CartaDeTunel carta) {
         try {
-            this.juego.jugarCarta(carta);
+            return this.juego.jugarCarta(carta);
         } catch (RemoteException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) {
+    public boolean jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) {
         try {
-            this.juego.jugarCarta(jugadorDestino, carta);
+            return this.juego.jugarCarta(jugadorDestino, carta);
         } catch (RemoteException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -93,11 +87,12 @@ public class ControladorJuego implements IControladorRemoto {
      * 
      * @param carta carta a jugar
      */
-    public void jugarCarta(CartaDeAccion carta) {
+    public boolean jugarCarta(CartaDeAccion carta) {
         try {
-            this.juego.jugarCarta(carta);
+            return this.juego.jugarCarta(carta);
         } catch (RemoteException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -126,15 +121,6 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public List<IJugador> obtenerNombresJugadores() {
-        try {
-            return this.juego.obtenerJugadores();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public void marcarListo(IJugador jugador) {
         try {
             juego.marcarListo(jugador);
@@ -152,11 +138,6 @@ public class ControladorJuego implements IControladorRemoto {
         return null;
     }
 
-    @Override
-    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
-        this.juego = (IJuego) arg0;
-    }
-
     public List<CartaDeTunel> obtenerTablero() {
         try {
             return this.juego.obtenerTablero();
@@ -164,5 +145,22 @@ public class ControladorJuego implements IControladorRemoto {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void terminarTurno() {
+        try {
+            this.juego.terminarTurno(this.vista.getJugador());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setVista(IVista vista) {
+        this.vista = vista;
+    }
+
+    @Override
+    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
+        this.juego = (IJuego) arg0;
     }
 }

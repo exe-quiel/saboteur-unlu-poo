@@ -24,15 +24,22 @@ public class Jugador implements IJugador, Serializable {
     private List<CartaDeAccion> herramientasRotas;
     private boolean listo;
     private RolJugador rol;
+    private boolean esMiTurno;
 
     public Jugador(String id) {
         super();
         this.id = id;
         this.mano = new ArrayList<>();
+        this.herramientasRotas = new ArrayList<>();
+        this.esMiTurno = false;
+        this.puntaje = new ArrayList<>();
     }
 
     public void inicializar() {
         this.mano.clear();
+        this.herramientasRotas.clear();
+        this.esMiTurno = false;
+        this.rol = null;
     }
 
     @Override
@@ -56,23 +63,23 @@ public class Jugador implements IJugador, Serializable {
     }
 
     @Override
-    public boolean repararHerramienta(CartaDeAccion cartaDeReparacion) {
+    public CartaDeAccion repararHerramienta(CartaDeAccion cartaDeReparacion) {
         List<TipoCartaAccion> tiposABuscar = cartaDeReparacion.getTipos()
                 .stream()
                 .map(tipo -> tipo.getCartaQueRepara())
                 .collect(Collectors.toList());
 
         Iterator<CartaDeAccion> herramientasRotasIterator = this.herramientasRotas.iterator();
-        boolean removida = false;
-        while (herramientasRotasIterator.hasNext() && !removida) {
+        CartaDeAccion cartaReparada = null;
+        while (herramientasRotasIterator.hasNext() && cartaReparada == null) {
             CartaDeAccion carta = herramientasRotasIterator.next();
             TipoCartaAccion tipoCartaRota = carta.getTipos().get(0);
             if (tiposABuscar.contains(tipoCartaRota)) {
                 herramientasRotasIterator.remove();
-                removida = true;
+                cartaReparada = carta;
             }
         }
-        return removida;
+        return cartaReparada;
     }
 
     public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
@@ -131,5 +138,15 @@ public class Jugador implements IJugador, Serializable {
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public void cambiarTurno() {
+        this.esMiTurno = !this.esMiTurno;
+    }
+
+    @Override
+    public boolean esMiTurno() {
+        return this.esMiTurno;
     }
 }

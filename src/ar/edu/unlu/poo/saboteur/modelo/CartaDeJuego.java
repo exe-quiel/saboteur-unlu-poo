@@ -40,4 +40,12 @@ public abstract class CartaDeJuego implements Serializable {
         this.setX(x);
         this.setY(y);
     }
+
+    public void inicializar() {
+        
+    };
+
+    public boolean equals(CartaDeJuego otraCarta) {
+        return this.getId() == otraCarta.getId();
+    }
 }

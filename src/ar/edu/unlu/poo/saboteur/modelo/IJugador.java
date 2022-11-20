@@ -24,7 +24,11 @@ public interface IJugador extends IJugadorBase {
 
     public boolean romperHerramienta(CartaDeAccion cartaDeAccion);
 
-    public boolean repararHerramienta(CartaDeAccion cartaDeAccion);
+    public CartaDeAccion repararHerramienta(CartaDeAccion cartaDeAccion);
 
     public void removerCartaDeLaMano(CartaDeJuego carta);
+
+    public void cambiarTurno();
+
+    public boolean esMiTurno();
 }

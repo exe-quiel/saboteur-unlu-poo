@@ -12,8 +12,6 @@ public interface IVista {
 
     public void actualizarMensajes();
 
-    public void cambiarTurno(IJugador jugador);
-
     public void actualizarJugadores(List<IJugador> jugadores);
 
     public void actualizarJugadores();
@@ -27,4 +25,6 @@ public interface IVista {
     public IJugador getJugador();
 
     public void setJugador(IJugador obtenerJugador);
+
+    public void actualizar();
 }

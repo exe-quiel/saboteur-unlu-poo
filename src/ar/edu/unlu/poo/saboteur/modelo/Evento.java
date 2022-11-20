@@ -124,6 +124,10 @@ public class Evento implements Serializable {
         return jugadores;
     }
 
+    public List<CartaDeTunel> getTablero() {
+        return tablero;
+    }
+
     public IJugador obtenerJugadorCorrespondiente(IJugador jugador) {
         return (IJugador) jugadores
                 .stream()

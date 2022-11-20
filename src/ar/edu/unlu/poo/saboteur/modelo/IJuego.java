@@ -10,11 +10,11 @@ import ar.edu.unlu.rmimvc.observer.IObservableRemoto;
 
 public interface IJuego extends IObservableRemoto {
 
-    public void jugarCarta(CartaDeTunel carta) throws RemoteException;
+    public boolean jugarCarta(CartaDeTunel carta) throws RemoteException;
 
-    public void jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException;
+    public boolean jugarCarta(IJugador jugadorDestino, CartaDeAccion carta) throws RemoteException;
 
-    public void jugarCarta(CartaDeAccion carta) throws RemoteException;
+    public boolean jugarCarta(CartaDeAccion carta) throws RemoteException;
 
     public void enviarMensaje(Mensaje mensaje) throws RemoteException;
 
@@ -28,9 +28,13 @@ public interface IJuego extends IObservableRemoto {
 
     public void marcarListo(IJugador jugadorCliente) throws RemoteException;
 
-    public void descartar(CartaDeJuego carta) throws RemoteException;
+    public boolean descartar(CartaDeJuego carta, IJugador jugador) throws RemoteException;
+
+    public boolean descartar(CartaDeJuego carta) throws RemoteException;
 
     public CartaDeJuego tomarCarta() throws RemoteException;
 
     public void salir(IJugador jugadorCliente) throws RemoteException ;
+
+    public void terminarTurno(IJugador jugador) throws RemoteException;
 }
