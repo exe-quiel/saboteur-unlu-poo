@@ -24,6 +24,7 @@ public class CartaDeTunel extends CartaDeJuego {
     private CartaDeTunel sur;
     private CartaDeTunel este;
     private CartaDeTunel oeste;
+    private boolean dadaVuelta;
 
     public CartaDeTunel(int id, TipoCartaTunel tipo, boolean sinSalida, List<Entrada> entradas) {
         super(id);
@@ -31,6 +32,7 @@ public class CartaDeTunel extends CartaDeJuego {
         this.sinSalida = sinSalida;
         this.entradas = entradas;
         this.yaRevisada = false;
+        this.dadaVuelta = false;
     }
 
     public TipoCartaTunel getTipo() {
@@ -287,5 +289,13 @@ public class CartaDeTunel extends CartaDeJuego {
 
     public void setYaRevisada(boolean yaRevisada) {
         this.yaRevisada = yaRevisada;
+    }
+
+    public boolean estaDadaVuelta() {
+        return dadaVuelta;
+    }
+
+    public void setDadaVuelta(boolean dadaVuelta) {
+        this.dadaVuelta = dadaVuelta;
     }
 }

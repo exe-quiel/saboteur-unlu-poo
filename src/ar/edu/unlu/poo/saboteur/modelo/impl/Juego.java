@@ -33,6 +33,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private List<CartaDeTunel> tablero;
     private CartaDeTunel cartaDeInicio;
+    private CartaDeTunel cartaDeDestinoOro;
     private List<CartaDeTunel> cartasDeDestino;
 
     private EstadoPartida estadoPartida;
@@ -70,6 +71,9 @@ public class Juego extends ObservableRemoto implements IJuego {
                         || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
                     this.cartasDeDestino.add(cartaDeTunel);
                     this.agregarAlTablero(cartaDeTunel, null);
+                    if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO) {
+                        this.cartaDeDestinoOro = cartaDeTunel;
+                    }
                     agregarAlMazo = false;
                 }
             }
@@ -154,9 +158,22 @@ public class Juego extends ObservableRemoto implements IJuego {
             this.agregarAlTablero(carta, cartasContiguas);
             String mensaje = String.format("[%s] colocó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), carta.getId(), carta.getX(), carta.getY());
             this.enviarMensajeDeSistema(mensaje);
+
+            this.verificarCondicionDeLlegadaADestino(carta);
+            if (this.cartaDeDestinoOro.estaDadaVuelta()) {
+                // TODO EXE - Finaliza la ronda
+            }
             return true;
         }
         return false;
+    }
+
+    private void verificarCondicionDeLlegadaADestino(CartaDeTunel carta) {
+        this.cartasDeDestino.forEach(destino -> {
+            if (destino.estaConectadaConCarta(carta)) {
+                destino.setDadaVuelta(false);
+            }
+        });
     }
 
     private List<CartaDeTunel> obtenerCartasContiguas(CartaDeTunel carta) {

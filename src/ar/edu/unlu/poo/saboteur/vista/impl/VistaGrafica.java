@@ -20,6 +20,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -43,6 +44,7 @@ import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
+import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
@@ -61,6 +63,8 @@ public class VistaGrafica implements IVista {
     private JComponent panelTablero;
     private List<CartaDeTunel> tablero;
     private CartaDeJuego cartaSeleccionada;
+    // Work-around para que no se disparen varios clics seguido en la lista de jugadores
+    private long ultimoClicSobreJugador = -1;
 
     private JPanel panelMano;
 
@@ -195,12 +199,39 @@ public class VistaGrafica implements IVista {
                     if (cartaSeleccionada != null) {
                         boolean resultadoAccion = false;
                         if (cartaSeleccionada instanceof CartaDeAccion) {
-                            System.out.println("Hiciste clic en el usuario " + jugador.getId());
-                            resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
-                            if (resultadoAccion) {
-                                controladorJuego.terminarTurno();
+                            boolean dispararAccion = true;
+                            if (ultimoClicSobreJugador == -1) {
+                                ultimoClicSobreJugador = System.currentTimeMillis();
                             } else {
-                                System.err.println("Ocurrió un error");
+                                long ahora = System.currentTimeMillis();
+                                if ((ahora - ultimoClicSobreJugador < 1000000000)) {
+                                    ultimoClicSobreJugador = ahora;
+                                    dispararAccion = false;
+                                }
+                            }
+                            if (dispararAccion) {
+                                System.out.println("Hiciste clic en el usuario " + jugador.getId());
+                                resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
+                                if (resultadoAccion) {
+                                    Component componentToRemove = null;
+                                    for (Component component : panelMano.getComponents()) {
+                                        if (component instanceof CartaMano) {
+                                            CartaDeJuego carta = ((CartaMano) component).getCarta();
+                                            if (carta == cartaSeleccionada) {
+                                                componentToRemove = component;
+                                            }
+                                        }
+                                    }
+                                    if (componentToRemove != null) {
+                                        panelMano.remove(componentToRemove);
+                                        panelMano.revalidate();
+                                        panelMano.repaint();
+                                    }
+                                    cartaSeleccionada = null;
+                                    controladorJuego.terminarTurno();
+                                } else {
+                                    System.err.println("Ocurrió un error");
+                                }
                             }
                         } else {
                             System.err.println("No seleccionaste una carta de acción");
@@ -398,6 +429,7 @@ public class VistaGrafica implements IVista {
             this.x = x;
             this.y = y;
             this.setCarta(carta);
+            this.setOpaque(true);
     
             addMouseListener(new MouseAdapter() {
     
@@ -473,8 +505,8 @@ public class VistaGrafica implements IVista {
                 this.setText("X");
             } else {
                 StringBuilder sb = new StringBuilder("<html><pre>");
-                sb.append(carta.getId());
                 if (carta instanceof CartaDeAccion) {
+                    sb.append(carta.getId() + "<br>");
                     sb.append("A<br>");
                     CartaDeAccion c = (CartaDeAccion) carta;
                     if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
@@ -488,33 +520,52 @@ public class VistaGrafica implements IVista {
                     }
                 } else if (carta instanceof CartaDeTunel) {
                     CartaDeTunel c = (CartaDeTunel) carta;
-                    List<Entrada> entradas = c.getEntradas();
-                    if (entradas.contains(Entrada.NORTE)) {
-                        sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
-                    } else {
-                        sb.append("         ");
+                    if (c.getTipo() == TipoCartaTunel.INICIO
+                            || c.getTipo() == TipoCartaTunel.DESTINO_ORO
+                            || c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
+                        this.setBackground(Color.BLACK);
+                        this.setForeground(Color.WHITE);
                     }
-                    sb.append("<br>");
-                    if (entradas.contains(Entrada.OESTE)) {
-                        sb.append("&#8592;   ");
+                    if (c.estaDadaVuelta()) {
+                        sb.append("    ?    ");
+                    } else if (c.getTipo() == TipoCartaTunel.DESTINO_ORO) {
+                        sb.append("   ORO   ");
+                        this.setBackground(Color.YELLOW);
+                        this.setForeground(Color.BLACK);
+                    } else if (c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA){
+                        sb.append("..PIEDRA..");
+                        this.setBackground(Color.GRAY);
+                        this.setForeground(Color.BLACK);
                     } else {
-                        sb.append("    ");
-                    }
-                    if (c.isSinSalida()) {
-                        sb.append("x");
-                    } else {
-                        sb.append(" ");
-                    }
-                    if (entradas.contains(Entrada.ESTE)) {
-                        sb.append("   &#8594;");
-                    } else {
-                        sb.append("    ");
-                    }
-                    sb.append("<br>");
-                    if (entradas.contains(Entrada.SUR)) {
-                        sb.append("    &#8595;    ");
-                    } else {
-                        sb.append("         ");
+                        sb.append(carta.getId());
+                        List<Entrada> entradas = c.getEntradas();
+                        if (entradas.contains(Entrada.NORTE)) {
+                            sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
+                        } else {
+                            sb.append("         ");
+                        }
+                        sb.append("<br>");
+                        if (entradas.contains(Entrada.OESTE)) {
+                            sb.append("&#8592;   ");
+                        } else {
+                            sb.append("    ");
+                        }
+                        if (c.isSinSalida()) {
+                            sb.append("x");
+                        } else {
+                            sb.append(" ");
+                        }
+                        if (entradas.contains(Entrada.ESTE)) {
+                            sb.append("   &#8594;");
+                        } else {
+                            sb.append("    ");
+                        }
+                        sb.append("<br>");
+                        if (entradas.contains(Entrada.SUR)) {
+                            sb.append("    &#8595;    ");
+                        } else {
+                            sb.append("         ");
+                        }
                     }
                 }
                 // https://stackoverflow.com/questions/1090098/newline-in-jlabel
