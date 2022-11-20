@@ -57,7 +57,6 @@ public class CartaDeTunel extends CartaDeJuego {
         }
         if (this.entradas.contains(Entrada.NORTE) && carta.getEntradas().contains(Entrada.SUR)) {
             this.norte = carta;
-            carta.setSur(this);
             return true;
         }
         return false;
@@ -75,7 +74,6 @@ public class CartaDeTunel extends CartaDeJuego {
         }
         if (this.entradas.contains(Entrada.SUR) && carta.getEntradas().contains(Entrada.NORTE)) {
             this.sur = carta;
-            carta.setNorte(this);
             return true;
         }
         return false;
@@ -93,7 +91,6 @@ public class CartaDeTunel extends CartaDeJuego {
         }
         if (this.entradas.contains(Entrada.ESTE) && carta.getEntradas().contains(Entrada.OESTE)) {
             this.este = carta;
-            carta.setOeste(this);
             return true;
         }
         return false;
@@ -111,39 +108,57 @@ public class CartaDeTunel extends CartaDeJuego {
         }
         if (this.entradas.contains(Entrada.OESTE) && carta.getEntradas().contains(Entrada.ESTE)) {
             this.oeste = carta;
-            carta.setEste(this);
             return true;
         }
         return false;
     }
 
+    /**
+     * Valida que la carta esté conectada con la carta pasada por parámetro.
+     * 
+     * Se puede usar para validar que las cartas estén conectadas al inicio al intentar conectar una nueva
+     * y también para evaluar si se se logró unir el inicio con alguna carta de destino
+     * 
+     * @param carta carta objetivo
+     * @return true si hay conexión, si no, false
+     */
     public boolean estaConectadaConCarta(CartaDeTunel carta) {
+        System.out.println("Evaluando conexión entre [" + this.getId() + "] y [" + carta.getId() + "]");
         if (this.yaRevisada) {
+            System.out.println(carta.getId() + " ya revisada");
+            return false;
+        } else {
+            this.yaRevisada = true;
+        }
+
+        if (this == carta) {
+            System.out.println(this.getId() + " es la carta objetivo");
+            return true;
+        }
+
+        if (this.sinSalida) {
             return false;
         }
 
         boolean estaConectada = false;
-        if (this == carta) {
-            estaConectada = true;
-        }
 
         if (norte != null && norte.estaConectadaConCarta(carta)) {
             estaConectada = true;
         }
 
-        if (sur != null && sur.estaConectadaConCarta(carta)) {
+        if (!estaConectada && sur != null && sur.estaConectadaConCarta(carta)) {
             estaConectada = true;
         }
 
-        if (este != null && este.estaConectadaConCarta(carta)) {
+        if (!estaConectada && este != null && este.estaConectadaConCarta(carta)) {
             estaConectada = true;
         }
 
-        if (oeste != null && oeste.estaConectadaConCarta(carta)) {
+        if (!estaConectada && oeste != null && oeste.estaConectadaConCarta(carta)) {
             estaConectada = true;
         }
 
-        this.yaRevisada = true;
+        System.out.println(this.getId() + " está conectada? " + estaConectada);
         return estaConectada;
     }
 
@@ -160,13 +175,21 @@ public class CartaDeTunel extends CartaDeJuego {
         this.este.setOeste(null);
         this.este = null;
 
-        this.setPosicion(-1, -1);
+        this.setPosicion(null, null);
     }
 
     public boolean colisionaCon(CartaDeJuego carta) {
         return this.getX() == carta.getX() && this.getY() == carta.getY();
     }
 
+    /**
+     * Valida que las cartas sean compatibles en cuando a sus entradas.
+     * 
+     * Acepta los casos en los que la cartas NO tienen entradas que las comuniquen entre sí, que es un caso válido.
+     * 
+     * @param carta carta a conectar
+     * @return true si es válido, si no, false
+     */
     public boolean admiteConexion(CartaDeTunel carta) {
         if (!colisionaCon(carta)) {
             if (this.getY() < carta.getY()) {
@@ -201,8 +224,8 @@ public class CartaDeTunel extends CartaDeJuego {
      * Similar a this{@link #admiteConexion(CartaDeTunel)}, pero verifica específicamente
      * que se forme un tunel entre las dos cartas
      * 
-     * @param carta carta a comparar
-     * @return true si se forma un túnel entre las dos cartas
+     * @param carta carta a conectar
+     * @return true si se forma un túnel entre las dos cartas, si no, false
      */
     public boolean admiteConexionEstricta(CartaDeTunel carta) {
         if (!colisionaCon(carta)) {
@@ -238,19 +261,19 @@ public class CartaDeTunel extends CartaDeJuego {
     }
 
     public boolean conectar(CartaDeTunel otraCarta) {
-        if (otraCarta.getX() == this.getX() - 1 && otraCarta.getY() == this.getY()) {
+        if (otraCarta.getX().equals(this.getX() - 1) && otraCarta.getY().equals(this.getY())) {
 
             return  this.setOeste(otraCarta) && otraCarta.setEste(this);
 
-        } else if (otraCarta.getX() == this.getX() + 1 && otraCarta.getY() == this.getY()) {
+        } else if (otraCarta.getX().equals(this.getX() + 1) && otraCarta.getY().equals(this.getY())) {
 
             return this.setEste(otraCarta) && otraCarta.setOeste(this);
 
-        } if (otraCarta.getX() == this.getX() && otraCarta.getY() == this.getY() - 1) {
+        } if (otraCarta.getX().equals(this.getX()) && otraCarta.getY().equals(this.getY() - 1)) {
 
             return this.setNorte(otraCarta) && otraCarta.setSur(this);
 
-        } else if (otraCarta.getX() == this.getX() && otraCarta.getY() == this.getY() + 1) {
+        } else if (otraCarta.getX().equals(this.getX()) && otraCarta.getY().equals(this.getY() + 1)) {
 
             return this.setSur(otraCarta) && otraCarta.setNorte(this);
         }
@@ -258,8 +281,8 @@ public class CartaDeTunel extends CartaDeJuego {
     }
 
     public boolean sonContiguas(CartaDeTunel carta) {
-        return Math.abs(this.getX() - carta.getX()) == 1
-                && Math.abs(this.getY() - carta.getY()) == 1;
+        return (Math.abs(this.getX() - carta.getX()) == 1 && this.getY().equals(carta.getY()))
+                || (Math.abs(this.getY() - carta.getY()) == 1 && this.getX().equals(carta.getX()));
     }
 
     public void setYaRevisada(boolean yaRevisada) {

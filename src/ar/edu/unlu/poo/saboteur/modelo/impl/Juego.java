@@ -35,10 +35,11 @@ public class Juego extends ObservableRemoto implements IJuego {
     private CartaDeTunel cartaDeInicio;
     private List<CartaDeTunel> cartasDeDestino;
 
-    private EstadoPartida partidaEmpezo;
+    private EstadoPartida estadoPartida;
 
     public Juego() {
         super();
+        estadoPartida = EstadoPartida.LOBBY;
         this.mensajes = new ArrayList<>();
         this.mazo = new ArrayList<>();
         this.pilaDeDescarte = new ArrayList<>();
@@ -118,20 +119,41 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     private boolean validarPosicion(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
-        boolean posicionEsValida = this.validarColision(carta)
-                && cartasContiguas.stream().allMatch(cartaContigua -> cartaContigua.admiteConexion(carta))
-                && cartasContiguas.stream().anyMatch(cartaContigua -> cartaContigua.admiteConexionEstricta(carta) && cartaContigua.estaConectadaConCarta(cartaDeInicio));
+        boolean colisionEsValida = this.validarColision(carta);
+        boolean contiguasAdmitenConexion = cartasContiguas != null
+                && !cartasContiguas.isEmpty()
+                && cartasContiguas.stream().allMatch(cartaContigua -> cartaContigua.admiteConexion(carta));
+        /*
+         * Este caso contempla que dos cartas que son contiguas y SÍ se conectan por un túnel
+         * estén conectadas al inicio
+         */
+        boolean contiguasConectadasAlInicio = cartasContiguas != null
+                && !cartasContiguas.isEmpty()
+                && cartasContiguas
+                    .stream()
+                    .anyMatch(cartaContigua -> cartaContigua.admiteConexionEstricta(carta) && cartaContigua.estaConectadaConCarta(cartaDeInicio));
+
+        System.out.println("colisionEsValida " + colisionEsValida);
+        System.out.println("contiguasAdmitenConexion " + contiguasAdmitenConexion);
+        System.out.println("contiguasConectadasAlInicio " + contiguasConectadasAlInicio);
+
+        // Reinicio flag
         this.tablero.forEach(cartaTablero -> cartaTablero.setYaRevisada(false));
-        return posicionEsValida;
+
+        return colisionEsValida && contiguasAdmitenConexion && contiguasConectadasAlInicio;
     }
 
     @Override
     public boolean jugarCarta(CartaDeTunel cartaDeTunelCliente) {
         System.out.println(String.format("Carta de túnel en (%s,%s)", cartaDeTunelCliente.getX(), cartaDeTunelCliente.getY()));
         CartaDeTunel carta = this.obtenerCartaDeTunelAPartirDeCliente(cartaDeTunelCliente);
+        carta.setPosicion(cartaDeTunelCliente.getX(), cartaDeTunelCliente.getY());
         List<CartaDeTunel> cartasContiguas = this.obtenerCartasContiguas(carta);
+        System.out.println(String.format("Hay %s cartas contiguas", cartasContiguas.size()));
         if (this.validarPosicion(carta, cartasContiguas)) {
             this.agregarAlTablero(carta, cartasContiguas);
+            String mensaje = String.format("[%s] colocó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), carta.getId(), carta.getX(), carta.getY());
+            this.enviarMensajeDeSistema(mensaje);
             return true;
         }
         return false;
@@ -150,20 +172,24 @@ public class Juego extends ObservableRemoto implements IJuego {
         IJugador jugadorActual = this.obtenerJugadorDelTurnoActual();
         CartaDeAccion carta = this.obtenerCartaDeAccionAPartirDeCliente(cartaCliente);
         if (carta.esCartaDeHerramientaRota()) {
-            if (!jugadorDestino.getHerramientasRotas().contains(carta)) {
-                jugadorDestino.romperHerramienta(carta);
-                jugadorActual.removerCartaDeLaMano(carta);
+            boolean resultadoAccion = jugadorDestino.romperHerramienta(carta);
+            if (!resultadoAccion) {
+                return false;
             }
+            jugadorActual.removerCartaDeLaMano(carta);
         } else if (carta.esCartaDeHerramientaReparada()) {
             CartaDeAccion herramientaReparada = jugadorDestino.repararHerramienta(carta);
-            if (herramientaReparada != null) {
-                descartar(herramientaReparada, jugadorDestino);
-                descartar(carta);
+            if (herramientaReparada == null) {
+                return false;
             }
+            descartar(herramientaReparada, jugadorDestino);
+            descartar(carta);
+        } else {
+            return false;
         }
 
-        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", jugadorActual.getId(), jugadorDestino.getId(), carta);
-        this.enviarMensaje(new Mensaje(mensaje));
+        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", jugadorActual.getId(), jugadorDestino.getId(), carta.getId());
+        this.enviarMensajeDeSistema(mensaje);
         return true;
     }
 
@@ -191,6 +217,8 @@ public class Juego extends ObservableRemoto implements IJuego {
                 }
             }
         }
+        String mensaje = String.format("[%s] usó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), carta.getId(), carta.getX(), carta.getY());
+        this.enviarMensajeDeSistema(mensaje);
         return true;
     }
 
@@ -198,6 +226,14 @@ public class Juego extends ObservableRemoto implements IJuego {
         return this.tablero
                 .stream()
                 .noneMatch(cartaDelTablero -> cartaDelTablero.colisionaCon(carta));
+    }
+
+    private void enviarMensajeDeSistema(String mensaje) {
+        try {
+            this.enviarMensaje(new Mensaje(mensaje));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -255,20 +291,28 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private void comenzarJuego() throws RemoteException {
         System.out.println("Todos listos");
-        this.partidaEmpezo = EstadoPartida.PRIMERA_RONDA;
+        this.estadoPartida = EstadoPartida.PRIMERA_RONDA;
         this.mezclarMazo();
         this.asignarRoles();
+        this.asignarTurno();
+        // TODO EXE - La cantidad de cartas a repartir depende de la cantidad de jugadores
         for (int i = 0; i < 10; i++) {
             for (IJugador jugador : jugadores) {
                 jugador.getMano().add(this.mazo.remove(0));
             }
         }
 
-        this.inicializarRonda();
+        // Esto solo hay que hacerlo en las rondas 2 y 3
+        //this.inicializarRonda();
+
+        this.enviarMensajeDeSistema("Comenzó el juego");
 
         Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores, this.tablero);
         this.notificarObservadores(evento);
-        this.enviarMensaje(new Mensaje(null, "Comenzó el juego"));
+    }
+
+    private void asignarTurno() {
+        this.jugadores.get(0).cambiarTurno();
     }
 
     /**

@@ -17,7 +17,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,8 +39,10 @@ import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
@@ -61,7 +62,7 @@ public class VistaGrafica implements IVista {
     private List<CartaDeTunel> tablero;
     private CartaDeJuego cartaSeleccionada;
 
-    private JPanel southPanel;
+    private JPanel panelMano;
 
     final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
     //final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
@@ -81,8 +82,8 @@ public class VistaGrafica implements IVista {
         EventQueue.invokeLater(() -> {
             JFrame frame = new JFrame();
             frame.setSize(1280, 720);
-            // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            // frame.setUndecorated(true);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            //frame.setUndecorated(true);
             //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
@@ -165,9 +166,9 @@ public class VistaGrafica implements IVista {
 
             panelPrincipal.add(panelTablero, BorderLayout.CENTER);
 
-            Container westPanel = new JPanel();
-            westPanel.setLayout(new GridLayout(10, 1));
-            westPanel.setPreferredSize(new Dimension(150, 0));
+            Container panelJugadores = new JPanel();
+            panelJugadores.setLayout(new GridLayout(10, 1));
+            panelJugadores.setPreferredSize(new Dimension(150, 0));
 
             listaDeJugadores = new JList<>();
             listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
@@ -213,9 +214,9 @@ public class VistaGrafica implements IVista {
                 listaDeJugadores.clearSelection();
             });
 
-            westPanel.add(listaDeJugadores);
+            panelJugadores.add(listaDeJugadores);
 
-            panelPrincipal.add(westPanel, BorderLayout.WEST);
+            panelPrincipal.add(panelJugadores, BorderLayout.WEST);
 
             this.actualizarJugadores();
 
@@ -239,11 +240,11 @@ public class VistaGrafica implements IVista {
 
             panelPrincipal.add(panelChat, BorderLayout.EAST);
 
-            southPanel = new JPanel();
-            southPanel.setLayout(new GridLayout(1, 10));
-            southPanel.add(botonListo);
-            southPanel.setPreferredSize(new Dimension(0, 200));
-            panelPrincipal.add(southPanel, BorderLayout.SOUTH);
+            panelMano = new JPanel();
+            panelMano.setLayout(new GridLayout(1, 10));
+            panelMano.add(botonListo);
+            panelMano.setPreferredSize(new Dimension(0, 200));
+            panelPrincipal.add(panelMano, BorderLayout.SOUTH);
             frame.setVisible(true);
         });
     }
@@ -309,77 +310,24 @@ public class VistaGrafica implements IVista {
         });
     }
 
-    /*
-    @Override
-    public void mostrarGrilla(byte idCarta, byte x, byte y) {
-        Arrays.asList(tablero.getComponents())
-            .stream()
-            .filter(carta -> {
-                if (carta instanceof LabelCarta) {
-                    LabelCarta labelCarta = (LabelCarta) carta;
-                    return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
-                }
-                return false;
-            }).findFirst().ifPresent(carta -> {
-                if (carta instanceof LabelCarta) {
-                    LabelCarta labelCarta = (LabelCarta) carta;
-                    CartaDeJuego cartaDeJuego = labelCarta.getCarta();
-                    if (cartaDeJuego instanceof CartaDeTunel) {
-                        CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaDeJuego;
-                        StringBuilder sb = new StringBuilder();
-                        List<Entrada> entradas = cartaDeTunel.getEntradas();
-                        if (entradas.contains(Entrada.NORTE)) {
-                            sb.append("    ^    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                        sb.append("\n");
-                        if (entradas.contains(Entrada.OESTE)) {
-                            sb.append("<       ");
-                        } else {
-                            sb.append("        ");
-                        }
-                        if (entradas.contains(Entrada.ESTE)) {
-                            sb.append(">");
-                        } else {
-                            sb.append(" ");
-                        }
-                        sb.append("\n");
-                        if (entradas.contains(Entrada.SUR)) {
-                            sb.append("    ∨    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                        labelCarta.setText(sb.toString());
-                    }
-                    // Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR
-                    // };
-                    // labelCarta.setIcon(new
-                    // ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
-                }
-            });
-    }
-    */
-
     @Override
     public void iniciarJuego(Evento evento) {
         botonListo.setEnabled(false);
-        southPanel.remove(botonListo);
-        // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
-        southPanel.revalidate();
-        southPanel.repaint();
+        panelMano.remove(botonListo);
 
         this.actualizar();
     }
 
     private void actualizarMano() {
-        southPanel.removeAll();
+        panelMano.removeAll();
 
         for (CartaDeJuego carta : this.jugadorCliente.getMano()) {
             CartaMano cartaLabel = new CartaMano(carta, controladorJuego);
             cartaLabel.setHorizontalAlignment(JLabel.CENTER);
-            southPanel.add(cartaLabel);
+            panelMano.add(cartaLabel);
         }
+        panelMano.revalidate();
+        panelMano.repaint();
     }
 
     @Override
@@ -395,6 +343,7 @@ public class VistaGrafica implements IVista {
     @Override
     public void actualizarTablero(List<CartaDeTunel> tablero) {
         this.tablero = tablero;
+        panelTablero.removeAll();
         for (int y = -1; y < 6; y++) {
             for (int x = -1; x < 10; x++) {
                 CartaDeTunel cartaEnPosicion = null;
@@ -410,6 +359,9 @@ public class VistaGrafica implements IVista {
                 panelTablero.add(label);
             }
         }
+        // https://stackoverflow.com/questions/7117332/dynamically-remove-component-from-jpanel
+        panelTablero.revalidate();
+        panelTablero.repaint();
     }
 
     @Override
@@ -426,58 +378,6 @@ public class VistaGrafica implements IVista {
         this.actualizarMano();
     }
 
-    /*
-    @Override
-    public void mostrarGrilla(byte idCarta, byte x, byte y) {
-        Arrays.asList(tablero.getComponents())
-            .stream()
-            .filter(carta -> {
-                if (carta instanceof LabelCarta) {
-                    LabelCarta labelCarta = (LabelCarta) carta;
-                    return labelCarta.getPosicionX() == x && labelCarta.getPosicionY() == y;
-                }
-                return false;
-            }).findFirst().ifPresent(carta -> {
-                if (carta instanceof LabelCarta) {
-                    LabelCarta labelCarta = (LabelCarta) carta;
-                    CartaDeJuego cartaDeJuego = labelCarta.getCarta();
-                    if (cartaDeJuego instanceof CartaDeTunel) {
-                        CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaDeJuego;
-                        StringBuilder sb = new StringBuilder();
-                        List<Entrada> entradas = cartaDeTunel.getEntradas();
-                        if (entradas.contains(Entrada.NORTE)) {
-                            sb.append("    ^    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                        sb.append("\n");
-                        if (entradas.contains(Entrada.OESTE)) {
-                            sb.append("<       ");
-                        } else {
-                            sb.append("        ");
-                        }
-                        if (entradas.contains(Entrada.ESTE)) {
-                            sb.append(">");
-                        } else {
-                            sb.append(" ");
-                        }
-                        sb.append("\n");
-                        if (entradas.contains(Entrada.SUR)) {
-                            sb.append("    ∨    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                        labelCarta.setText(sb.toString());
-                    }
-                    // Entrada[] entradas = new Entrada[] { Entrada.NORTE, Entrada.ESTE, Entrada.SUR
-                    // };
-                    // labelCarta.setIcon(new
-                    // ImageIcon(generadorDeImagenes.generarImagen(Entrada.values(), false)));
-                }
-            });
-    }
-    */
-    
     /**
      * Representa un espacio (slot) en el tablero, que puede estar libre o no.
      *
@@ -504,41 +404,40 @@ public class VistaGrafica implements IVista {
                 @Override
                 public void mouseClicked(MouseEvent event) {
                     System.out.println("[" + jugadorCliente.getId() + "] -> " + jugadorCliente.esMiTurno());
-                    boolean estaLibre = ((CartaTablero) event.getComponent()).getCarta() == null;
                     if (jugadorCliente.esMiTurno()) {
                         if (jugadorCliente.getHerramientasRotas().isEmpty()) {
                             if (cartaSeleccionada != null) {
-                                if (estaLibre) {
-                                    boolean resultadoAccion = false;
-                                    if (cartaSeleccionada instanceof CartaDeTunel) {
-                                        CartaDeTunel cartaDeTunel = (CartaDeTunel) cartaSeleccionada;
-                                        cartaDeTunel.setPosicion(x, y);
-                                        resultadoAccion = controlador.jugarCarta(cartaDeTunel);
-                                    } else if (cartaSeleccionada instanceof CartaDeAccion) {
-                                        resultadoAccion = controlador.jugarCarta((CartaDeAccion) cartaSeleccionada);
+                                boolean resultadoAccion = false;
+                                cartaSeleccionada.setPosicion(getPosX(), getPosY());
+                                if (cartaSeleccionada instanceof CartaDeTunel) {
+                                    boolean estaLibre = ((CartaTablero) event.getComponent()).getCarta() == null;
+                                    if (estaLibre) {
+                                        resultadoAccion = controlador.jugarCarta((CartaDeTunel) cartaSeleccionada);
+                                    } else {
+                                        System.err.println("Ya hay una carta en ese lugar");
                                     }
-                                    if (resultadoAccion) {
-                                        Component componentToRemove = null;
-                                        for (Component component : southPanel.getComponents()) {
-                                            if (component instanceof JLabel) {
-                                                CartaDeJuego carta = ((CartaMano) component).getCarta();
-                                                if (carta == cartaSeleccionada) {
-                                                    componentToRemove = component;
-                                                }
+                                } else if (cartaSeleccionada instanceof CartaDeAccion) {
+                                    resultadoAccion = controlador.jugarCarta((CartaDeAccion) cartaSeleccionada);
+                                }
+                                if (resultadoAccion) {
+                                    Component componentToRemove = null;
+                                    for (Component component : panelMano.getComponents()) {
+                                        if (component instanceof CartaMano) {
+                                            CartaDeJuego carta = ((CartaMano) component).getCarta();
+                                            if (carta == cartaSeleccionada) {
+                                                componentToRemove = component;
                                             }
                                         }
-                                        if (componentToRemove != null) {
-                                            southPanel.remove(componentToRemove);
-                                            southPanel.revalidate();
-                                            southPanel.repaint();
-                                        }
-                                        cartaSeleccionada = null;
-                                        controladorJuego.terminarTurno();
-                                    } else {
-                                        System.err.println("Ocurrió un error");
                                     }
+                                    if (componentToRemove != null) {
+                                        panelMano.remove(componentToRemove);
+                                        panelMano.revalidate();
+                                        panelMano.repaint();
+                                    }
+                                    cartaSeleccionada = null;
+                                    controladorJuego.terminarTurno();
                                 } else {
-                                    System.err.println("Ya hay una carta en ese lugar");
+                                    System.err.println("Ocurrió un error");
                                 }
                             } else {
                                 System.err.println("Tenés que seleccionar una carta primero");
@@ -573,9 +472,64 @@ public class VistaGrafica implements IVista {
             if (carta == null) {
                 this.setText("X");
             } else {
-                this.setText(String.valueOf(carta.getId()));
-                carta.setPosicion(x, y);
+                StringBuilder sb = new StringBuilder("<html><pre>");
+                sb.append(carta.getId());
+                if (carta instanceof CartaDeAccion) {
+                    sb.append("A<br>");
+                    CartaDeAccion c = (CartaDeAccion) carta;
+                    if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
+                        sb.append("D");
+                    } else if (c.getTipos().contains(TipoCartaAccion.MAPA)) {
+                        sb.append("D");
+                    } else if (c.esCartaDeHerramientaReparada()) {
+                        sb.append("REP");
+                    } else if (c.esCartaDeHerramientaRota()) {
+                        sb.append("ROT");
+                    }
+                } else if (carta instanceof CartaDeTunel) {
+                    CartaDeTunel c = (CartaDeTunel) carta;
+                    List<Entrada> entradas = c.getEntradas();
+                    if (entradas.contains(Entrada.NORTE)) {
+                        sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
+                    } else {
+                        sb.append("         ");
+                    }
+                    sb.append("<br>");
+                    if (entradas.contains(Entrada.OESTE)) {
+                        sb.append("&#8592;   ");
+                    } else {
+                        sb.append("    ");
+                    }
+                    if (c.isSinSalida()) {
+                        sb.append("x");
+                    } else {
+                        sb.append(" ");
+                    }
+                    if (entradas.contains(Entrada.ESTE)) {
+                        sb.append("   &#8594;");
+                    } else {
+                        sb.append("    ");
+                    }
+                    sb.append("<br>");
+                    if (entradas.contains(Entrada.SUR)) {
+                        sb.append("    &#8595;    ");
+                    } else {
+                        sb.append("         ");
+                    }
+                }
+                // https://stackoverflow.com/questions/1090098/newline-in-jlabel
+                sb.append("</pre></html>");
+                this.setText(sb.toString());
+                this.carta.setPosicion(this.x, this.y);
             }
+        }
+
+        public Integer getPosX() {
+            return this.x;
+        }
+
+        public Integer getPosY() {
+            return this.y;
         }
     }
 
@@ -603,6 +557,7 @@ public class VistaGrafica implements IVista {
                     System.out.println("[" + jugadorCliente.getId() + "] -> " + jugadorCliente.esMiTurno());
                     if (jugadorCliente.esMiTurno()) {
                         cartaSeleccionada = carta;
+                        System.out.println("Seleccionaste la carta " + carta.getId());
                     } else {
                         System.err.println("No es tu turno todavía");
                     }
@@ -627,11 +582,53 @@ public class VistaGrafica implements IVista {
         public void setCarta(CartaDeJuego carta) {
             // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
-            if (carta == null) {
-                this.setText("X");
-            } else {
-                this.setText(String.valueOf(carta.getId()));
+            StringBuilder sb = new StringBuilder("<html><pre>");
+            sb.append(carta.getId());
+            if (carta instanceof CartaDeAccion) {
+                sb.append(" A ");
+                CartaDeAccion c = (CartaDeAccion) carta;
+                if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
+                    sb.append("D");
+                } else if (c.getTipos().contains(TipoCartaAccion.MAPA)) {
+                    sb.append("D");
+                } else if (c.esCartaDeHerramientaReparada()) {
+                    sb.append("REP");
+                } else if (c.esCartaDeHerramientaRota()) {
+                    sb.append("ROT");
+                }
+            } else if (carta instanceof CartaDeTunel) {
+                CartaDeTunel c = (CartaDeTunel) carta;
+                List<Entrada> entradas = c.getEntradas();
+                if (entradas.contains(Entrada.NORTE)) {
+                    sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
+                } else {
+                    sb.append("         ");
+                }
+                sb.append("<br>");
+                if (entradas.contains(Entrada.OESTE)) {
+                    sb.append("&#8592;   ");
+                } else {
+                    sb.append("    ");
+                }
+                if (c.isSinSalida()) {
+                    sb.append("x");
+                } else {
+                    sb.append(" ");
+                }
+                if (entradas.contains(Entrada.ESTE)) {
+                    sb.append("   &#8594;");
+                } else {
+                    sb.append("    ");
+                }
+                sb.append("<br>");
+                if (entradas.contains(Entrada.SUR)) {
+                    sb.append("    &#8595;    ");
+                } else {
+                    sb.append("         ");
+                }
             }
+            sb.append("</pre></html>");
+            this.setText(sb.toString());
         }
     }
 
@@ -707,7 +704,5 @@ public class VistaGrafica implements IVista {
         @Override
         public void mouseMoved(MouseEvent e) {
     
-        }
-    
-    }
+        }}
 }
