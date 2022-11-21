@@ -6,7 +6,9 @@ import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 
 public interface IJugadorBase {
 
-    public String getId();
+    public int getId();
+
+    public String getNombre();
 
     public List<CartaDeAccion> getHerramientasRotas();
 }

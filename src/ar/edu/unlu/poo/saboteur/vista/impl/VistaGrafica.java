@@ -11,6 +11,7 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
@@ -34,12 +35,14 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
@@ -49,6 +52,7 @@ import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
+import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.Mensaje;
@@ -58,7 +62,7 @@ public class VistaGrafica implements IVista {
 
     //private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
 
-    final static Font FONT = new Font(Font.MONOSPACED, Font.PLAIN, 14);
+    final static Font FONT = new Font(null, Font.PLAIN, 14);
 
     private Container panelDePaneles;
     private CardLayout paneles;
@@ -77,8 +81,6 @@ public class VistaGrafica implements IVista {
 
     private JPanel panelMano;
 
-    private boolean tableroVisible;
-
     final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
     //final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
 
@@ -88,6 +90,8 @@ public class VistaGrafica implements IVista {
 
     private JPanel jugadoresResultados;
 
+    private JButton botonContinuar;
+
     public VistaGrafica(ControladorJuego controladorJuego, IJugador jugadorCliente) {
         this.jugadorCliente = jugadorCliente;
 
@@ -95,6 +99,7 @@ public class VistaGrafica implements IVista {
         this.controladorJuego.setVista(this);
 
         EventQueue.invokeLater(() -> {
+
             JFrame frame = new JFrame();
             frame.setSize(1280, 720);
             //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -109,10 +114,10 @@ public class VistaGrafica implements IVista {
                     System.exit(0);
                 }
             });
-            frame.setTitle("Saboteur - " + this.jugadorCliente.getId());
+            frame.setTitle("Saboteur - " + this.jugadorCliente.getNombre());
 
             Container panelPrincipal = frame.getContentPane();
-            panelPrincipal.setLayout(new GridLayout(2, 1));
+            //panelPrincipal.setLayout();
 
             panelDePaneles = new JPanel();
             panelDePaneles.setLayout(new CardLayout());
@@ -124,12 +129,13 @@ public class VistaGrafica implements IVista {
 
             panelPrincipal.add(panelDePaneles);
 
+            /*
             tableroVisible = true;
 
             JButton switchPanelButton = new JButton("Switch panel");
             switchPanelButton.addActionListener(evento -> {
                 if (tableroVisible) {
-                    mostrarResultados();
+                    mostrarResultados(TipoEvento.FIN_RONDA);
                 } else {
                     mostrarTablero();
                 }
@@ -137,6 +143,7 @@ public class VistaGrafica implements IVista {
             });
 
             panelPrincipal.add(switchPanelButton);
+            */
 
             frame.setVisible(true);
         });
@@ -144,16 +151,21 @@ public class VistaGrafica implements IVista {
 
     private Container crearPanelDeResultados() {
         JPanel panelDeResultados = new JPanel();
-        panelDeResultados.setLayout(new BorderLayout());
+        panelDeResultados.setLayout(new GridBagLayout());
         jugadoresResultados = new JPanel();
         jugadoresResultados.setLayout(new GridLayout(10, 1));
+        jugadoresResultados.setFont(FONT);
 
-        panelDeResultados.add(jugadoresResultados, BorderLayout.CENTER);
+        panelDeResultados.add(jugadoresResultados);
 
         JLabel titulo = new JLabel("FIN DE LA RONDA");
-        panelDeResultados.add(titulo, BorderLayout.NORTH);
-        JButton botonContinuar = new JButton("Continuar");
-        panelDeResultados.add(botonContinuar, BorderLayout.SOUTH);
+        panelDeResultados.add(titulo);
+        botonContinuar = new JButton("Continuar");
+        botonContinuar.addActionListener(evento -> {
+            botonContinuar.setEnabled(false);
+            controladorJuego.marcarListo(jugadorCliente);
+        });
+        panelDeResultados.add(botonContinuar);
         return panelDeResultados;
     }
 
@@ -266,12 +278,16 @@ public class VistaGrafica implements IVista {
         panelTablero = new JPanel();
         panelTablero.setLayout(new GridLayout(7, 11));
 
-        this.actualizarTablero();
+        //this.actualizarTablero();
 
         panelDeJuego.add(panelTablero, BorderLayout.CENTER);
 
         Container panelJugadores = new JPanel();
-        panelJugadores.setPreferredSize(new Dimension(200, 500));
+        panelJugadores.setLayout(new FlowLayout());
+        //panelJugadores.setPreferredSize(new Dimension(200, 500));
+        TitledBorder border = new TitledBorder("Jugadores");
+        border.setTitleFont(FONT);
+        ((JPanel) panelJugadores).setBorder(border);
 
         listaDeJugadores = new JList<>();
         listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
@@ -285,7 +301,17 @@ public class VistaGrafica implements IVista {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof IJugador) {
                     IJugador jugador = (IJugador) value;
-                    setText(jugador.getId());
+
+                    StringBuilder sb = new StringBuilder("<html>")
+                        .append(jugador.getNombre())
+                        .append("<br>");
+                    sb.append(jugador.getHerramientasRotas()
+                            .stream()
+                            .map(herramientaRota -> "\t-".concat(herramientaRota.getTipos().get(0).name()))
+                            .collect(Collectors.joining("<br>")));
+                    sb.append("</html>");
+                    setText(sb.toString());
+
                     if (jugador.equals(jugadorCliente)) {
                         setForeground(Color.RED);
                     }
@@ -301,7 +327,7 @@ public class VistaGrafica implements IVista {
             IJugador jugador = listaDeJugadores.getModel().getElementAt(indiceDelJugador);
 
             if (jugadorCliente.esMiTurno()) {
-                if (cartaSeleccionada != null) {
+                if (cartaSeleccionada != null && !jugador.equals(jugadorCliente)) {
                     boolean resultadoAccion = false;
                     if (cartaSeleccionada instanceof CartaDeAccion) {
                         boolean dispararAccion = true;
@@ -309,18 +335,19 @@ public class VistaGrafica implements IVista {
                             ultimoClicSobreJugador = System.currentTimeMillis();
                         } else {
                             long ahora = System.currentTimeMillis();
-                            if ((ahora - ultimoClicSobreJugador < 1000000000)) {
+                            if ((ahora - ultimoClicSobreJugador < 1000)) {
                                 ultimoClicSobreJugador = ahora;
                                 dispararAccion = false;
                             }
                         }
                         if (dispararAccion) {
-                            System.out.println("Hiciste clic en el usuario " + jugador.getId());
+                            System.out.println("Hiciste clic en el usuario " + jugador.getNombre());
                             resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
                             if (resultadoAccion) {
                                 //removerCartaSeleccionadaDeLaMano();
                                 controladorJuego.avanzar();
                             } else {
+                                JOptionPane.showConfirmDialog(null, "Error");
                                 System.err.println("Ocurrió un error");
                             }
                         }
@@ -461,11 +488,9 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void iniciarJuego(Evento evento) {
-        botonListo.setEnabled(false);
+    public void iniciarRonda(Evento evento) {
         panelMano.remove(botonListo);
-
-        this.actualizarPanelTablero();
+        this.mostrarTablero();
     }
 
     // TODO EXE - No hay motivo para que esto esté en la interfaz. Hacerlo privado
@@ -532,19 +557,49 @@ public class VistaGrafica implements IVista {
         this.actualizarMensajes();
     }
 
-    private void actualizarPanelResultados() {
+    private void actualizarPanelResultados(TipoEvento tipoEvento) {
         List<IJugador> jugadores = this.controladorJuego.obtenerJugadores();
-        jugadores
-            .stream()
-            .map(jugador -> new StringBuilder()
-                    .append(jugador.getId())
-                    .append(" ")
-                    .append(jugador.getRol() == null ? "ERROR" : jugador.getRol().name())
-                    .append(" -> ")
-                    .append(jugador.calcularPuntaje())
-                    .toString())
-            .map(JLabel::new)
-            .forEach(this.jugadoresResultados::add);
+        jugadores.sort((o1, o2) -> o2.calcularPuntaje() - o1.calcularPuntaje());
+        this.jugadoresResultados.removeAll();
+        if (tipoEvento == TipoEvento.FIN_RONDA) {
+            this.jugadoresResultados.setBorder(new TitledBorder("Resultado de la ronda"));
+            jugadores
+                .stream()
+                .map(jugador -> new StringBuilder()
+                        .append(jugador.getNombre())
+                        .append(" ")
+                        // TODO EXE - Sacar lo de ERROR. Es solo mientras hago pruebas
+                        .append(jugador.getRol() == null ? "ERROR" : jugador.getRol().name())
+                        .append(" -> ")
+                        .append(jugador.calcularPuntaje())
+                        .toString())
+                .map(JLabel::new)
+                .forEach(this.jugadoresResultados::add);
+            this.botonContinuar.setEnabled(true);
+        } else if (tipoEvento == TipoEvento.FIN_JUEGO) {
+            this.jugadoresResultados.setBorder(new TitledBorder("Resultado de la ronda"));
+            this.jugadoresResultados.removeAll();
+            jugadores
+                .stream()
+                .map(jugador -> {
+                    String contenidoLabel = new StringBuilder()
+                        .append(jugador.getNombre())
+                        .append(" ")
+                        .append(jugador.getRol().name())
+                        .append(" -> ")
+                        .append(jugador.calcularPuntaje())
+                        .toString();
+                    JLabel label = new JLabel(contenidoLabel);
+                    if (jugador.equals(jugadorCliente)) {
+                        label.setForeground(Color.RED);
+                    }
+                    return label;
+                })
+                .forEach(this.jugadoresResultados::add);
+            this.botonContinuar.setVisible(false);
+        }
+        this.jugadoresResultados.revalidate();
+        this.jugadoresResultados.repaint();
     }
 
     @Override
@@ -554,9 +609,9 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void mostrarResultados() {
+    public void mostrarResultados(TipoEvento tipoEvento) {
         this.paneles.show(this.panelDePaneles, PANEL_RESULTADOS);
-        this.actualizarPanelResultados();
+        this.actualizarPanelResultados(tipoEvento);
     }
 
     public String obtenerRepresentacionGraficaCarta(CartaDeJuego carta, JLabel label) {
@@ -677,6 +732,7 @@ public class VistaGrafica implements IVista {
                                     //removerCartaSeleccionadaDeLaMano();
                                     controladorJuego.avanzar();
                                 } else {
+                                    JOptionPane.showConfirmDialog(null, "Error");
                                     System.err.println("Ocurrió un error");
                                 }
                             } else {
@@ -746,7 +802,7 @@ public class VistaGrafica implements IVista {
     
                 @Override
                 public void mouseClicked(MouseEvent event) {
-                    System.out.println("[" + jugadorCliente.getId() + "] -> " + jugadorCliente.esMiTurno());
+                    System.out.println("[" + jugadorCliente.getNombre() + "] -> " + jugadorCliente.esMiTurno());
                     if (jugadorCliente.esMiTurno()) {
                         if (event.getButton() == MouseEvent.BUTTON1) {
                             cartaSeleccionada = carta;

@@ -23,7 +23,7 @@ public class CreadorDeCartas {
     public static void main(String[] args) {
         List<CartaDeJuego> cartasDeJuego = new ArrayList<>();
         List<CartaDePuntos> cartasDePuntos = new ArrayList<>();
-        Path path = Paths.get("assets");
+        Path path = Paths.get("archivos");
         Arrays.asList(path.toFile().listFiles((file, name) -> name.endsWith(".csv")))
             .forEach(file -> {
                 System.out.println(file.getName());
@@ -49,11 +49,11 @@ public class CreadorDeCartas {
                 }
                 fileScanner.close();
             });
-        Serializador serializadorCartasDeJuego = new Serializador("assets/cartas_de_juego.dat");
+        Serializador serializadorCartasDeJuego = new Serializador("archivos/cartas_de_juego.dat");
         serializadorCartasDeJuego.serializar(cartasDeJuego);
         System.out.println("Archivo creado: cartas_de_juego.dat");
 
-        Serializador serializadorCartasDePuntos = new Serializador("assets/cartas_de_puntos.dat");
+        Serializador serializadorCartasDePuntos = new Serializador("archivos/cartas_de_puntos.dat");
         serializadorCartasDePuntos.serializar(cartasDePuntos);
         System.out.println("Archivo creado: cartas_de_puntos.dat");
     }

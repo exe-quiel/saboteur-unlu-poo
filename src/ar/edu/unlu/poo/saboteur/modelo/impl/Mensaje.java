@@ -32,7 +32,7 @@ public class Mensaje implements Serializable {
         if (esDelSistema()) {
             return "SISTEMA";
         }
-        return this.jugador.getId();
+        return this.jugador.getNombre();
     }
 
     public IJugadorBase getJugador() {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 
 public interface IVista {
@@ -20,7 +21,7 @@ public interface IVista {
 
     public void actualizarTablero();
 
-    public void iniciarJuego(Evento evento);
+    public void iniciarRonda(Evento evento);
 
     public IJugador getJugador();
 
@@ -30,7 +31,7 @@ public interface IVista {
 
     public void mostrarTablero();
 
-    public void mostrarResultados();
+    public void mostrarResultados(TipoEvento tipoEvento);
 
     public void actualizarMano();
 

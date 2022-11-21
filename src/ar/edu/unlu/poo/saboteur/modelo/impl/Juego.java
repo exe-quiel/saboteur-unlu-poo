@@ -51,7 +51,6 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.tablero = new ArrayList<>();
         this.cartasDePuntos = new ArrayList<>();
         this.cargarCartas();
-        this.aleatorizarPosicionDeCartasDeDestino();
     }
 
     /**
@@ -62,7 +61,7 @@ public class Juego extends ObservableRemoto implements IJuego {
      * 
      */
     private void cargarCartas() {
-        Serializador serializadorCartasDeJuego = new Serializador("assets/cartas_de_juego.dat");
+        Serializador serializadorCartasDeJuego = new Serializador("archivos/cartas_de_juego.dat");
         List<CartaDeJuego> cartasDeJuego = serializadorCartasDeJuego.deserializarLista(CartaDeJuego.class);
         for (CartaDeJuego cartaDeJuego : cartasDeJuego) {
             boolean agregarAlMazo = true;
@@ -86,7 +85,7 @@ public class Juego extends ObservableRemoto implements IJuego {
                 this.mazo.add(cartaDeJuego);
             }
         }
-        Serializador serializadorCartasDePuntos = new Serializador("assets/cartas_de_puntos.dat");
+        Serializador serializadorCartasDePuntos = new Serializador("archivos/cartas_de_puntos.dat");
         List<CartaDePuntos> cartasDePuntos = serializadorCartasDePuntos.deserializarLista(CartaDePuntos.class);
         this.cartasDePuntos.addAll(cartasDePuntos);
         // Ordenar de mayor a menor
@@ -114,9 +113,9 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private void removerCartaDeLaMano(CartaDeJuego carta) {
         if (this.obtenerJugadorDelTurnoActual().getMano().remove(carta)) {
-            System.out.println("Se removió la carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getId());
+            System.out.println("Se removió la carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getNombre());
         } else {
-            System.err.println("Error al remover al carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getId());
+            System.err.println("Error al remover al carta " + carta.getId() + " de la mano del jugador " + this.obtenerJugadorDelTurnoActual().getNombre());
         }
     }
 
@@ -173,7 +172,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         System.out.println(String.format("Hay %s cartas contiguas", cartasContiguas.size()));
         if (this.validarPosicion(carta, cartasContiguas)) {
             this.agregarAlTablero(carta, cartasContiguas);
-            String mensaje = String.format("[%s] colocó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), carta.getId(), carta.getX(), carta.getY());
+            String mensaje = String.format("%s colocó la carta %s en (%s,%s)", this.obtenerJugadorDelTurnoActual().getNombre(), carta.getId(), carta.getX(), carta.getY());
             this.enviarMensajeDeSistema(mensaje);
 
             this.verificarCondicionDeLlegadaADestino(carta);
@@ -219,7 +218,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             return false;
         }
 
-        String mensaje = String.format("[%s] aplicó a [%s] la carta [%s]", jugadorActual.getId(), jugadorDestino.getId(), carta.getId());
+        String mensaje = String.format("%s aplicó a %s la carta %s", jugadorActual.getNombre(), jugadorDestino.getNombre(), carta.getId());
         this.enviarMensajeDeSistema(mensaje);
         return true;
     }
@@ -233,12 +232,12 @@ public class Juego extends ObservableRemoto implements IJuego {
 
         if (cartaDeAccion.getTipos().get(0) == TipoCartaAccion.DERRUMBE) {
             CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(cartaDeAccion);
-            if (cartaADerrumbar != null && !esCartaInicial(cartaADerrumbar)) {
+            if (cartaADerrumbar != null && !esCartaDeInicioODeDestino(cartaADerrumbar)) {
                 cartaADerrumbar.derrumbar();
                 this.descartarCarta(cartaADerrumbar, this.tablero);
                 this.descartarCarta(cartaDeAccion, this.obtenerJugadorDelTurnoActual());
 
-                String mensaje = String.format("[%s] usó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), cartaCliente.getId(), cartaCliente.getX(), cartaCliente.getY());
+                String mensaje = String.format("%s usó la carta %s en (%s,%s)", this.obtenerJugadorDelTurnoActual().getNombre(), cartaCliente.getId(), cartaCliente.getX(), cartaCliente.getY());
                 this.enviarMensajeDeSistema(mensaje);
                 return true;
             } else {
@@ -247,7 +246,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         } else if (cartaDeAccion.getTipos().get(0) == TipoCartaAccion.MAPA) {
             CartaDeTunel destino = this.obtenerCartaQueColisiona(cartaDeAccion);
             if (destino != null && esCartaDeDestino(destino)) {
-                String mensajeGeneral = String.format("[%s] vio la carta de destino en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), cartaCliente.getX(), cartaCliente.getY());
+                String mensajeGeneral = String.format("%s vio la carta de destino en (%s,%s)", this.obtenerJugadorDelTurnoActual().getNombre(), cartaCliente.getX(), cartaCliente.getY());
                 this.enviarMensajeDeSistema(mensajeGeneral);
 
                 // TODO EXE - Esto debería ser solo para el jugador que jugó la carta de mapa
@@ -267,7 +266,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.tablero.remove(cartaADerrumbar);
     }
 
-    private boolean esCartaInicial(CartaDeTunel carta) {
+    private boolean esCartaDeInicioODeDestino(CartaDeTunel carta) {
         return carta == this.cartaDeInicio || esCartaDeDestino(carta);
     }
 
@@ -291,7 +290,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void enviarMensaje(Mensaje mensaje) throws RemoteException {
-        System.out.println(String.format("[%s] dijo [%s]", mensaje.obtenerOrigen(), mensaje.getTexto()));
+        System.out.println(String.format("%s: %s", mensaje.obtenerOrigen(), mensaje.getTexto()));
         this.mensajes.add(mensaje);
         try {
             Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE);
@@ -307,12 +306,11 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public IJugador crearJugador() throws RemoteException {
+    public IJugador crearJugador(String nombreJugador) throws RemoteException {
         if (estadoPartida == EstadoPartida.LOBBY) {
-            String idJugador = "Jugador-" + indiceIdJugador;
-            Jugador jugador = new Jugador(idJugador);
+            Jugador jugador = new Jugador(indiceIdJugador, nombreJugador);
             jugadores.add(jugador);
-            this.enviarMensajeDeSistema(idJugador + " se unió a la partida");
+            this.enviarMensajeDeSistema(nombreJugador + " se unió a la partida");
             this.notificarObservadores(new Evento(TipoEvento.JUGADOR_ENTRA, this.jugadores));
             indiceIdJugador++;
             return jugador;
@@ -339,28 +337,41 @@ public class Juego extends ObservableRemoto implements IJuego {
         IJugador jugador = this.obtenerJugadorAPartirDeCliente(jugadorCliente);
         jugador.marcarListo();
 
-        System.out.println("[" + jugador.getId() + "] está listo");
+        System.out.println(jugador.getNombre() + " está listo");
 
         if (jugadores.stream().allMatch(IJugador::estaListo)) {
-            comenzarJuego();
+            if (estadoPartida == EstadoPartida.LOBBY) {
+                this.avanzarEstadoPartida();
+            }
+            comenzarRonda();
         }
     }
 
-    private void comenzarJuego() throws RemoteException {
+    private void avanzarEstadoPartida() {
+        System.out.println(this.estadoPartida.name() + " -> " + this.estadoPartida.getSiguienteEstado());
+        this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+    }
+
+    private void comenzarRonda() throws RemoteException {
         System.out.println("Todos listos");
-        this.estadoPartida = EstadoPartida.PRIMERA_RONDA;
-        this.mezclarMazo();
-        this.asignarRoles();
-        this.asignarTurno();
-        this.repartirCartas();
+        switch (estadoPartida) {
+        case PRIMERA_RONDA:
+        case SEGUNDA_RONDA:
+        case TERCERA_RONDA:
+            this.iniciarRonda();
 
-        // Esto solo hay que hacerlo en las rondas 2 y 3
-        //this.inicializarRonda();
+            this.mezclarMazo();
+            this.asignarRoles();
+            this.repartirCartas();
 
-        this.enviarMensajeDeSistema("Comenzó el juego");
+            this.enviarMensajeDeSistema("Comenzó la ronda");
 
-        Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores, this.tablero);
-        this.notificarObservadores(evento);
+            Evento evento = new Evento(TipoEvento.INICIO_RONDA, this.jugadores, this.tablero);
+            this.notificarObservadores(evento);
+            break;
+        default:
+            break;
+        }
     }
 
     private void aleatorizarPosicionDeCartasDeDestino() {
@@ -373,6 +384,8 @@ public class Juego extends ObservableRemoto implements IJuego {
             Integer[] posicion = posiciones.remove(0);
             carta.setPosicion(posicion[0], posicion[1]);
         });
+     // TODO EXE - Quitar esto en la versión final
+        cartaDeInicio.setPosicion(this.cartaDeDestinoOro.getX() - 3, this.cartaDeDestinoOro.getY());
     }
 
     private void repartirCartas() {
@@ -393,25 +406,32 @@ public class Juego extends ObservableRemoto implements IJuego {
         }
     }
 
-    private void asignarTurno() {
-        this.jugadores.get(0).cambiarTurno();
-    }
-
     /**
      * Remueve las cartas del tablero, dela pila de descarte y de las manos de los jugadores
      * y las coloca nuevamente en el mazo.
      * 
      */
-    private void inicializarRonda() {
+    private void iniciarRonda() {
+        if (estadoPartida == EstadoPartida.PRIMERA_RONDA) {
+            indiceJugadorTurno = 0;
+            this.obtenerJugadorDelTurnoActual().cambiarTurno();
+            this.aleatorizarPosicionDeCartasDeDestino();
+            return;
+        }
+
+        this.aleatorizarPosicionDeCartasDeDestino();
+
+        incrementarTurno();
+
         Iterator<CartaDeTunel> tableroIterator = this.tablero.iterator();
         while (tableroIterator.hasNext()) {
             CartaDeTunel carta = tableroIterator.next();
-            if (carta != cartaDeInicio && !cartasDeDestino.contains(carta)) {
+            if (!esCartaDeInicioODeDestino(carta)) {
                 // Son cartas con posiciones fijas en el tablero que no deberían quitarse
                 tableroIterator.remove();
+                carta.inicializar();
+                this.mazo.add(carta);
             }
-            carta.inicializar();
-            this.mazo.add(carta);
         }
 
         Iterator<CartaDeJuego> descarteIterator = this.pilaDeDescarte.iterator();
@@ -438,6 +458,9 @@ public class Juego extends ObservableRemoto implements IJuego {
                 this.mazo.add(carta);
             }
         }
+
+        // Dar vuelta las cartas de destino para que no se vean
+        this.cartasDeDestino.forEach(carta -> carta.setVisible(false));
     }
 
     private void asignarRoles() {
@@ -488,7 +511,7 @@ public class Juego extends ObservableRemoto implements IJuego {
     public boolean descartar(CartaDeJuego cartaCliente) throws RemoteException {
         CartaDeJuego carta = this.obtenerCartaDeJuegoAPartirDelCliente(cartaCliente);
         this.descartarCarta(carta, this.obtenerJugadorDelTurnoActual());
-        this.enviarMensajeDeSistema("[" + this.obtenerJugadorDelTurnoActual().getId() + "] descartó una carta");
+        this.enviarMensajeDeSistema(this.obtenerJugadorDelTurnoActual().getNombre() + " descartó una carta");
         return true;
     }
 
@@ -537,71 +560,76 @@ public class Juego extends ObservableRemoto implements IJuego {
     @Override
     public void avanzar() throws RemoteException {
         if (terminoLaRonda()) { // Condición de fin de ronda
-            if (ganaronLosBuscadores()) {
-                System.out.println("Ganaron los buscadores");
-                if (this.cartasDePuntos.isEmpty()) {
-                    System.err.println("No quedan cartas de puntos");
-                } else {
-                    List<IJugador> buscadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.BUSCADOR).collect(Collectors.toList());
-                    int cantidadDePepitasARepartir = this.jugadores.size() < 10 ? this.jugadores.size() : 9;
-                    for (int i = 0; i < cantidadDePepitasARepartir; i++) {
-                        // TODO EXE - Esto es lo mismo de más abajo. Extraer a un método
-                        int indiceBuscador = i % buscadores.size();
-                        IJugador jugador = buscadores.get(indiceBuscador);
-                        CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
-                        jugador.recibirPuntos(cartaDePuntos);
-                        System.out.println("Buscador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
-                    }
-                }
-            } else if (ganaronLosSaboteadores()) {
-                if (this.cartasDePuntos.isEmpty()) {
-                    System.err.println("No quedan cartas de puntos");
-                } else {
-                    System.out.println("Ganaron los saboteadores");
-                    List<IJugador> saboteadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.SABOTEADOR).collect(Collectors.toList());
-                    if (saboteadores.size() == 1) {
-                        // TODO EXE - Darle 4 pepitas
-                        for (int i = 0; i < saboteadores.size(); i++) {
-                            IJugador jugador = saboteadores.get(i);
-                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
-                            jugador.recibirPuntos(cartaDePuntos);
-                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
-                        }
-                    } else if (saboteadores.size() == 2 || saboteadores.size() == 3) {
-                        // TODO EXE - Darle 3 pepitas a cada uno
-                        for (int i = 0; i < saboteadores.size(); i++) {
-                            IJugador jugador = saboteadores.get(i);
-                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
-                            jugador.recibirPuntos(cartaDePuntos);
-                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
-                        }
-                    } else {
-                        // TODO EXE - Darle 2 pepitas a cada uno
-                        for (int i = 0; i < saboteadores.size(); i++) {
-                            IJugador jugador = saboteadores.get(i);
-                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
-                            jugador.recibirPuntos(cartaDePuntos);
-                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
-                        }
-                    }
-                }
-            }
-            this.estadoPartida = this.estadoPartida.getSiguienteEstado();
-            // Conviene reiniciar los puntajes, manos, pila de descartes, etc. en el método comenzarJuego.
-            // La idea es que el estado de la ronda o partida se mantenga hasta que los jugadores terminen de mirar los resultados
-            if (EstadoPartida.RESULTADOS == estadoPartida) {
-                this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
-            } else {
-                this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
-            }
+            finalizarRonda();
         } else {
             this.incrementarTurno();
-            System.out.println("Siguiente turno: " + this.obtenerJugadorDelTurnoActual().getId());
+            System.out.println("Siguiente turno: " + this.obtenerJugadorDelTurnoActual().getNombre());
             try {
                 this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void finalizarRonda() throws RemoteException {
+        if (ganaronLosBuscadores()) {
+            System.out.println("Ganaron los buscadores");
+            if (this.cartasDePuntos.isEmpty()) {
+                System.err.println("No quedan cartas de puntos");
+            } else {
+                List<IJugador> buscadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.BUSCADOR).collect(Collectors.toList());
+                int cantidadDePepitasARepartir = this.jugadores.size() < 10 ? this.jugadores.size() : 9;
+                for (int i = 0; i < cantidadDePepitasARepartir; i++) {
+                    // TODO EXE - Esto es lo mismo de más abajo. Extraer a un método
+                    int indiceBuscador = i % buscadores.size();
+                    IJugador jugador = buscadores.get(indiceBuscador);
+                    CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                    jugador.recibirPuntos(cartaDePuntos);
+                    System.out.println("Buscador " + jugador.getNombre() + " recibe " + cartaDePuntos.getPuntos() + " puntos");
+                }
+            }
+        } else if (ganaronLosSaboteadores()) {
+            if (this.cartasDePuntos.isEmpty()) {
+                System.err.println("No quedan cartas de puntos");
+            } else {
+                System.out.println("Ganaron los saboteadores");
+                List<IJugador> saboteadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.SABOTEADOR).collect(Collectors.toList());
+                if (saboteadores.size() == 1) {
+                    // TODO EXE - Darle 4 pepitas
+                    for (int i = 0; i < saboteadores.size(); i++) {
+                        IJugador jugador = saboteadores.get(i);
+                        CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                        jugador.recibirPuntos(cartaDePuntos);
+                        System.out.println("Saboteador " + jugador.getNombre() + " recibe " + cartaDePuntos.getPuntos() + " puntos");
+                    }
+                } else if (saboteadores.size() == 2 || saboteadores.size() == 3) {
+                    // TODO EXE - Darle 3 pepitas a cada uno
+                    for (int i = 0; i < saboteadores.size(); i++) {
+                        IJugador jugador = saboteadores.get(i);
+                        CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                        jugador.recibirPuntos(cartaDePuntos);
+                        System.out.println("Saboteador " + jugador.getNombre() + " recibe " + cartaDePuntos.getPuntos() + " puntos");
+                    }
+                } else {
+                    // TODO EXE - Darle 2 pepitas a cada uno
+                    for (int i = 0; i < saboteadores.size(); i++) {
+                        IJugador jugador = saboteadores.get(i);
+                        CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                        jugador.recibirPuntos(cartaDePuntos);
+                        System.out.println("Saboteador " + jugador.getNombre() + " recibe " + cartaDePuntos.getPuntos() + " puntos");
+                    }
+                }
+            }
+        }
+        this.jugadores.forEach(IJugador::desmarcarListo);
+        this.avanzarEstadoPartida();
+        // Conviene reiniciar los puntajes, manos, pila de descartes, etc. en el método comenzarJuego.
+        // La idea es que el estado de la ronda o partida se mantenga hasta que los jugadores terminen de mirar los resultados
+        if (EstadoPartida.RESULTADOS == estadoPartida) {
+            this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
+        } else {
+            this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
         }
     }
 

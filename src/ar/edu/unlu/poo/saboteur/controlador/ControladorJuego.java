@@ -49,14 +49,13 @@ public class ControladorJuego implements IControladorRemoto {
             case CAMBIO_TURNO:
                 vista.actualizarPanelTablero();
                 break;
-            case INICIA_JUEGO:
-                vista.iniciarJuego(evento);
+            case INICIO_RONDA:
+                vista.iniciarRonda(evento);
                 break;
             case FIN_RONDA:
-                vista.mostrarResultados();
-                break;
+                vista.mostrarResultados(evento.getTipoEvento());
             case FIN_JUEGO:
-                vista.mostrarResultados();
+                vista.mostrarResultados(evento.getTipoEvento());
                 break;
             default:
                 break;
@@ -113,9 +112,9 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public IJugador crearJugador() {
+    public IJugador crearJugador(String nombreUsuario) {
         try {
-            return this.juego.crearJugador();
+            return this.juego.crearJugador(nombreUsuario);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

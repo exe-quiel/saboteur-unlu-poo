@@ -20,7 +20,7 @@ public interface IJuego extends IObservableRemoto {
 
     public List<Mensaje> getMensajes() throws RemoteException;
 
-    public IJugador crearJugador() throws RemoteException;
+    public IJugador crearJugador(String nombreUsuario) throws RemoteException;
 
     public List<IJugador> obtenerJugadores() throws RemoteException;
 

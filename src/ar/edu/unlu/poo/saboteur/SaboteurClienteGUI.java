@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
 
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -27,6 +28,8 @@ public class SaboteurClienteGUI {
     private static IVista vista;
 
     public static void main(String[] args) throws NumberFormatException, IOException {
+
+
         ControladorJuego controladorJuego = new ControladorJuego();
 
         try {
@@ -36,6 +39,8 @@ public class SaboteurClienteGUI {
             e1.printStackTrace();
         }
 
+        String nombreUsuario = JOptionPane.showInputDialog("Ingresar un nombre de usuario");
+
         final int CLIENT_PORT = obtenerPuertoClienteYActualizarArchivo();
         Cliente cliente = new Cliente(DEFAULT_CLIENT_HOSTNAME, CLIENT_PORT, DEFAULT_SERVER_HOSTNAME,
                 DEFAULT_SERVER_PORT);
@@ -44,16 +49,15 @@ public class SaboteurClienteGUI {
         } catch (RemoteException | RMIMVCException e) {
             e.printStackTrace();
         }
-        IJugador jugador = null;
-        jugador = controladorJuego.crearJugador();
+        IJugador jugador = controladorJuego.crearJugador(nombreUsuario);
         if (jugador == null) {
             System.out.println("Partida ya iniciada");
             System.exit(0);
         }
-        String idJugador = jugador.getId();
-        System.out.println("Iniciando cliente [" + idJugador + "] en puerto [" + CLIENT_PORT + "]");
+        String nombreJugador = jugador.getNombre();
+        System.out.println("Iniciando cliente [" + nombreJugador + "] en puerto [" + CLIENT_PORT + "]");
         vista = new VistaGrafica(controladorJuego, jugador);
-        System.out.println("Tu nombre: " + idJugador);
+        System.out.println("Tu nombre: " + nombreJugador);
         vista.iniciar();
     }
 

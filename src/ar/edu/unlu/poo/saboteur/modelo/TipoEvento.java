@@ -9,7 +9,7 @@ public enum TipoEvento {
     USA_CARTA,
     DESCARTA,
     PASA_TURNO,
-    INICIA_JUEGO,
+    INICIO_RONDA,
     MOSTRAR_CARTA_DE_DESTINO,
     CARTA_DERRUMBADA,
     FIN_RONDA,

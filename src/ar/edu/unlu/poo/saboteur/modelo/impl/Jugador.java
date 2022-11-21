@@ -18,7 +18,8 @@ public class Jugador implements IJugador, Serializable {
      * 
      */
     private static final long serialVersionUID = 3336584393172378611L;
-    private final String id;
+    private final int id;
+    private String nombre;
     private List<CartaDeJuego> mano;
     private List<CartaDePuntos> puntaje;
     private List<CartaDeAccion> herramientasRotas;
@@ -26,9 +27,10 @@ public class Jugador implements IJugador, Serializable {
     private RolJugador rol;
     private boolean esMiTurno;
 
-    public Jugador(String id) {
+    public Jugador(int id, String nombre) {
         super();
         this.id = id;
+        this.nombre = nombre;
         this.mano = new ArrayList<>();
         this.herramientasRotas = new ArrayList<>();
         this.esMiTurno = false;
@@ -82,18 +84,26 @@ public class Jugador implements IJugador, Serializable {
         return cartaReparada;
     }
 
+    @Override
     public void recibirCartas(List<CartaDeJuego> cartasDeJuego) {
         this.mano = cartasDeJuego;
     }
 
+    @Override
     public void marcarListo() {
         this.listo = true;
+    }
+
+    @Override
+    public void desmarcarListo() {
+        this.listo = false;
     }
 
     public boolean estaListo() {
         return listo;
     }
 
+    @Override
     public void setHerramientasRotas(List<CartaDeAccion> herramientasRotas) {
         this.herramientasRotas = herramientasRotas;
     }
@@ -131,13 +141,18 @@ public class Jugador implements IJugador, Serializable {
             return false;
         }
         Jugador otroJugador = (Jugador) object;
-        return this.id.equals(otroJugador.getId());
+        return this.id == otroJugador.getId();
         // TODO EXE - Ver tema hashcode
     }
 
     @Override
-    public String getId() {
+    public int getId() {
         return this.id;
+    }
+
+    @Override
+    public String getNombre() {
+        return this.nombre;
     }
 
     @Override
