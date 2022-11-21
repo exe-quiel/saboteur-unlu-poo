@@ -35,7 +35,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -48,7 +47,6 @@ import javax.swing.event.MouseInputListener;
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.Entrada;
-import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
@@ -420,7 +418,6 @@ public class VistaGrafica implements IVista {
 
     }
 
-    @Override
     public void actualizarVistaJugadores(List<IJugador> jugadores) {
         this.listaDeJugadores.setModel(new AbstractListModel<IJugador>() {
 
@@ -438,7 +435,6 @@ public class VistaGrafica implements IVista {
             public IJugador getElementAt(int index) {
                 return jugadores.get(index);
             }
-
         });
     }
 
@@ -485,7 +481,7 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void iniciarRonda(Evento evento) {
+    public void iniciarRonda() {
         panelMano.remove(botonListo);
         this.mostrarTablero();
     }
@@ -564,7 +560,7 @@ public class VistaGrafica implements IVista {
         List<IJugador> jugadores = this.controladorJuego.obtenerJugadores();
         jugadores.sort((o1, o2) -> o2.calcularPuntaje() - o1.calcularPuntaje());
         this.jugadoresResultados.removeAll();
-        if (tipoEvento == TipoEvento.FIN_RONDA) {
+        if (tipoEvento == TipoEvento.FINALIZA_RONDA) {
             this.jugadoresResultados.setBorder(new TitledBorder("Resultado de la ronda"));
             jugadores.stream().map(jugador -> new StringBuilder().append(jugador.getNombre()).append(" ")
                     // TODO EXE - Sacar lo de ERROR. Es solo mientras hago pruebas
@@ -572,7 +568,7 @@ public class VistaGrafica implements IVista {
                     .append(jugador.calcularPuntaje()).toString()).map(JLabel::new)
                     .forEach(this.jugadoresResultados::add);
             this.botonContinuar.setEnabled(true);
-        } else if (tipoEvento == TipoEvento.FIN_JUEGO) {
+        } else if (tipoEvento == TipoEvento.FINALIZA_JUEGO) {
             this.jugadoresResultados.setBorder(new TitledBorder("Resultado de la ronda"));
             this.jugadoresResultados.removeAll();
             jugadores.stream().map(jugador -> {

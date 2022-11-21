@@ -293,7 +293,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         System.out.println(String.format("%s: %s", mensaje.obtenerOrigen(), mensaje.getTexto()));
         this.mensajes.add(mensaje);
         try {
-            Evento evento = new Evento(TipoEvento.NUEVO_MENSAJE);
+            Evento evento = new Evento(TipoEvento.LLEGA_MENSAJE);
             this.notificarObservadores(evento);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -311,7 +311,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             Jugador jugador = new Jugador(indiceIdJugador, nombreJugador);
             jugadores.add(jugador);
             this.enviarMensajeDeSistema(nombreJugador + " se unió a la partida");
-            this.notificarObservadores(new Evento(TipoEvento.JUGADOR_ENTRA, this.jugadores));
+            this.notificarObservadores(new Evento(TipoEvento.ENTRA_JUGADOR, this.jugadores));
             indiceIdJugador++;
             return jugador;
         }
@@ -366,7 +366,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
             this.enviarMensajeDeSistema("Comenzó la ronda");
 
-            Evento evento = new Evento(TipoEvento.INICIO_RONDA, this.jugadores, this.tablero);
+            Evento evento = new Evento(TipoEvento.INICIA_RONDA, this.jugadores, this.tablero);
             this.notificarObservadores(evento);
             break;
         default:
@@ -547,7 +547,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         IJugador jugador = this.obtenerJugadorAPartirDeCliente(jugadorCliente);
         this.jugadores.remove(jugador);
         try {
-            this.notificarObservadores(new Evento(TipoEvento.JUGADOR_SALE, this.jugadores));
+            this.notificarObservadores(new Evento(TipoEvento.SALE_JUGADOR, this.jugadores));
         } catch (RemoteException e) {
             // No hay manera de quitar el observador que se fue
             // porque la librería no da acceso a los observadores
@@ -564,7 +564,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             this.incrementarTurno();
             System.out.println("Siguiente turno: " + this.obtenerJugadorDelTurnoActual().getNombre());
             try {
-                this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
+                this.notificarObservadores(new Evento(TipoEvento.CAMBIA_TURNO, this.jugadores));
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -626,9 +626,9 @@ public class Juego extends ObservableRemoto implements IJuego {
         // Conviene reiniciar los puntajes, manos, pila de descartes, etc. en el método comenzarJuego.
         // La idea es que el estado de la ronda o partida se mantenga hasta que los jugadores terminen de mirar los resultados
         if (EstadoPartida.RESULTADOS == estadoPartida) {
-            this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
+            this.notificarObservadores(new Evento(TipoEvento.FINALIZA_JUEGO));
         } else {
-            this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
+            this.notificarObservadores(new Evento(TipoEvento.FINALIZA_RONDA));
         }
     }
 

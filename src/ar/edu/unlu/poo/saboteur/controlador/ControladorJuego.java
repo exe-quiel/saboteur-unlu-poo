@@ -29,32 +29,32 @@ public class ControladorJuego implements IControladorRemoto {
         if (arg1 instanceof Evento) {
             Evento evento = (Evento) arg1;
             switch ((TipoEvento) evento.getTipoEvento()) {
-            case JUGADOR_ENTRA:
+            case ENTRA_JUGADOR:
                 // Null-check porque cuando recién ejecuta el main un jugador,
                 // la vista aún no está seteada y tira excepción cuando recibe
                 // el evento de su propio ingreso al juego
                 if (vista != null) {
-                    vista.actualizarVistaJugadores(evento.getJugadores());
+                    vista.actualizarJugadoresTablero();
                 }
                 break;
-            case JUGADOR_SALE:
-                vista.actualizarVistaJugadores(evento.getJugadores());
+            case SALE_JUGADOR:
+                vista.actualizarJugadoresTablero();
                 break;
-            case NUEVO_MENSAJE:
+            case LLEGA_MENSAJE:
                 if (vista != null) {
                     vista.actualizarMensajes();
                 }
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
-            case CAMBIO_TURNO:
+            case CAMBIA_TURNO:
                 vista.actualizarPanelTablero();
                 break;
-            case INICIO_RONDA:
-                vista.iniciarRonda(evento);
+            case INICIA_RONDA:
+                vista.iniciarRonda();
                 break;
-            case FIN_RONDA:
+            case FINALIZA_RONDA:
                 vista.mostrarResultados(evento.getTipoEvento());
-            case FIN_JUEGO:
+            case FINALIZA_JUEGO:
                 vista.mostrarResultados(evento.getTipoEvento());
                 break;
             default:
