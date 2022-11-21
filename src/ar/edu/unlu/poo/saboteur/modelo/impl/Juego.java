@@ -384,12 +384,11 @@ public class Juego extends ObservableRemoto implements IJuego {
             Integer[] posicion = posiciones.remove(0);
             carta.setPosicion(posicion[0], posicion[1]);
         });
-     // TODO EXE - Quitar esto en la versión final
+        // TODO EXE - Quitar esto en la versión final, es solo para pruebas
         cartaDeInicio.setPosicion(this.cartaDeDestinoOro.getX() - 3, this.cartaDeDestinoOro.getY());
     }
 
     private void repartirCartas() {
-        // TODO EXE - La cantidad de cartas a repartir depende de la cantidad de jugadores
         int cantidadDeJugadores = this.jugadores.size();
         int cantidadARepartir = -1;
         if (cantidadDeJugadores >= 3 && cantidadDeJugadores <= 5) {
@@ -559,7 +558,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void avanzar() throws RemoteException {
-        if (terminoLaRonda()) { // Condición de fin de ronda
+        if (terminoLaRonda()) {
             finalizarRonda();
         } else {
             this.incrementarTurno();
@@ -731,5 +730,11 @@ public class Juego extends ObservableRemoto implements IJuego {
         }
         Collections.shuffle(roles);
         return roles;
+    }
+
+    @Override
+    public void pasar() throws RemoteException {
+        this.enviarMensajeDeSistema(this.obtenerJugadorDelTurnoActual().getNombre() + " pasó");
+        this.avanzar();
     }
 }

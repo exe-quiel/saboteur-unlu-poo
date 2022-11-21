@@ -37,4 +37,6 @@ public interface IJuego extends IObservableRemoto {
     public void salir(IJugador jugadorCliente) throws RemoteException ;
 
     public void avanzar() throws RemoteException;
+
+    public void pasar() throws RemoteException;
 }

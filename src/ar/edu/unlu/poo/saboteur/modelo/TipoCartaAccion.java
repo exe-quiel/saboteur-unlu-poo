@@ -6,19 +6,26 @@ import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 
 public enum TipoCartaAccion {
 
-    LAMPARA_ROTA(null),
-    CARRETILLA_ROTA(null),
-    PICO_ROTO(null),
-    LAMPARA_REPARADA(LAMPARA_ROTA),
-    CARRETILLA_REPARADA(CARRETILLA_ROTA),
-    PICO_REPARADO(PICO_ROTO),
-    MAPA(null),
-    DERRUMBE(null);
+    LAMPARA_ROTA("Lámpara rota"),
+    CARRETILLA_ROTA("Carretilla rota"),
+    PICO_ROTO("Pico roto"),
+    LAMPARA_REPARADA(LAMPARA_ROTA, "Lámpara reparada"),
+    CARRETILLA_REPARADA(CARRETILLA_ROTA, "Carretilla reparada"),
+    PICO_REPARADO(PICO_ROTO, "Pico reparado"),
+    MAPA("Mapa"),
+    DERRUMBE("Derrumbe");
 
     private TipoCartaAccion cartaQueRepara;
+    private String nombreUserFriendly;
 
-    TipoCartaAccion(TipoCartaAccion cartaQueRepara) {
+    TipoCartaAccion(String nombreUserFriendly) {
+        this.cartaQueRepara = null;
+        this.nombreUserFriendly = nombreUserFriendly;
+    }
+
+    TipoCartaAccion(TipoCartaAccion cartaQueRepara, String nombreUserFriendly) {
         this.cartaQueRepara = cartaQueRepara;
+        this.nombreUserFriendly = nombreUserFriendly;
     }
 
     public boolean esCartaDeHerramientaRota() {
@@ -38,5 +45,10 @@ public enum TipoCartaAccion {
 
     public TipoCartaAccion getCartaQueRepara() {
         return cartaQueRepara;
+    }
+
+    @Override
+    public String toString() {
+        return this.nombreUserFriendly;
     }
 }

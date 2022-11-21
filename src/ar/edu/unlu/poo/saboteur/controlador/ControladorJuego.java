@@ -192,4 +192,12 @@ public class ControladorJuego implements IControladorRemoto {
         }
         return null;
     }
+
+    public void pasar() {
+        try {
+            this.juego.pasar();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 }
