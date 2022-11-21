@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,6 +89,15 @@ public class Juego extends ObservableRemoto implements IJuego {
         Serializador serializadorCartasDePuntos = new Serializador("assets/cartas_de_puntos.dat");
         List<CartaDePuntos> cartasDePuntos = serializadorCartasDePuntos.deserializarLista(CartaDePuntos.class);
         this.cartasDePuntos.addAll(cartasDePuntos);
+        // Ordenar de mayor a menor
+        this.cartasDePuntos.sort(new Comparator<CartaDePuntos>() {
+
+            @Override
+            public int compare(CartaDePuntos o1, CartaDePuntos o2) {
+                return o2.getPuntos() - o1.getPuntos();
+            }
+        });
+        //System.out.println(this.cartasDePuntos.stream().map(carta -> String.valueOf(carta.getPuntos())).collect(Collectors.joining(", ")));
     }
 
     private void agregarAlTablero(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
@@ -527,6 +537,24 @@ public class Juego extends ObservableRemoto implements IJuego {
     @Override
     public void avanzar() throws RemoteException {
         if (terminoLaRonda()) { // Condición de fin de ronda
+            if (ganaronLosBuscadores()) {
+                List<IJugador> buscadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.BUSCADOR).collect(Collectors.toList());
+                List<CartaDePuntos> pepitasARepartir = new ArrayList<>();
+                int cantidadDePepitasARepartir = this.jugadores.size() < 10 ? this.jugadores.size() : 9;
+                for (int i = 0; i < cantidadDePepitasARepartir; i++) {
+                    int indiceBuscador = i % buscadores.size();
+                    buscadores.get(indiceBuscador).recibirPuntos(this.cartasDePuntos.remove(0));
+                }
+            } else if (ganaronLosSaboteadores()) {
+                List<IJugador> saboteadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.SABOTEADOR).collect(Collectors.toList());
+                if (saboteadores.size() == 1) {
+                    // TODO EXE - Darle 4 pepitas
+                } else if (saboteadores.size() == 2 || saboteadores.size() == 3) {
+                    // TODO EXE - Darle 3 pepitas a cada uno
+                } else {
+                    // TODO EXE - Darle 2 pepitas a cada uno
+                }
+            }
             if (estadoPartida == EstadoPartida.TERCERA_RONDA) {
                 this.estadoPartida = this.estadoPartida.getSiguienteEstado();
                 this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
@@ -545,14 +573,21 @@ public class Juego extends ObservableRemoto implements IJuego {
         }
     }
 
+    private boolean ganaronLosBuscadores() {
+        return this.cartaDeDestinoOro.isVisible();
+    }
+
+    private boolean ganaronLosSaboteadores() {
+        return this.mazo.isEmpty() && this.jugadores.stream().allMatch(jugador -> jugador.getMano().isEmpty());
+    }
+
     /**
      * Evalúa si se cumplen las condiciones para que termine la ronda.
      * 
      * @return true si se llegó a la carta de oro o si no se llegó y además ya no quedan cartas por jugar
      */
     private boolean terminoLaRonda() {
-        return this.cartaDeDestinoOro.isVisible()
-                || (this.mazo.isEmpty() && this.jugadores.stream().allMatch(jugador -> jugador.getMano().isEmpty()));
+        return ganaronLosBuscadores() || ganaronLosSaboteadores();
     }
 
     private List<RolJugador> obtenerRolesParaRepartir() {

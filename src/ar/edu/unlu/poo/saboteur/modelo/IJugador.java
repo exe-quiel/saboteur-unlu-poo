@@ -31,4 +31,6 @@ public interface IJugador extends IJugadorBase {
     public void cambiarTurno();
 
     public boolean esMiTurno();
+
+    public void recibirPuntos(CartaDePuntos cartaDePuntos);
 }

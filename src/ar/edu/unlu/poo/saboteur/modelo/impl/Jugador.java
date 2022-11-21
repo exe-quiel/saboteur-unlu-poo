@@ -149,4 +149,9 @@ public class Jugador implements IJugador, Serializable {
     public boolean esMiTurno() {
         return this.esMiTurno;
     }
+
+    @Override
+    public void recibirPuntos(CartaDePuntos cartaDePuntos) {
+        this.puntaje.add(cartaDePuntos);
+    }
 }
