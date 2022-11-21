@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -8,6 +9,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -20,8 +22,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractListModel;
@@ -86,7 +88,7 @@ public class VistaGrafica implements IVista {
         EventQueue.invokeLater(() -> {
             JFrame frame = new JFrame();
             frame.setSize(1280, 720);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             //frame.setUndecorated(true);
             //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -100,184 +102,203 @@ public class VistaGrafica implements IVista {
             });
             frame.setTitle("Saboteur - " + this.jugadorCliente.getId());
 
-            chat = new JList<>();
-            chat.setCellRenderer(new DefaultListCellRenderer() {
-
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof Mensaje) {
-                        Mensaje mensaje = (Mensaje) value;
-                        setText(mensaje.obtenerOrigen() + ": " + mensaje.getTexto());
-                        if (mensaje.esDelSistema()) {
-                            setForeground(Color.RED);
-                        }
-                    }
-                    return this;
-                }
-            });
-
-            JTextField textoDelUsuario = new JTextField();
-            textoDelUsuario.setSize(500, 20);
-            textoDelUsuario.setText("Escribir mensaje");
-
-            botonEnviar = new JButton("Enviar");
-
-            botonEnviar.addActionListener(event -> {
-                String text = textoDelUsuario.getText();
-                if (text != null && !text.isEmpty()) {
-                    controladorJuego.enviarMensaje(new Mensaje(this.jugadorCliente, text));
-                }
-                textoDelUsuario.setText("Escribir mensaje");
-            });
-
-            textoDelUsuario.addKeyListener(new KeyListener() {
-
-                @Override
-                public void keyTyped(KeyEvent e) {
-                    if ("\n".charAt(0) == e.getKeyChar() && textoDelUsuario.getText().length() > 0) {
-                        System.out.println("Clicked");
-                        botonEnviar.doClick();
-                    }
-                }
-
-                @Override
-                public void keyReleased(KeyEvent e) {
-                    // Sin implementación
-                }
-
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    // Sin implementación
-                }
-            });
-
-            botonListo = new JButton("Listo");
-            botonListo.addActionListener(evento -> {
-                botonListo.setEnabled(false);
-                controladorJuego.marcarListo(jugadorCliente);
-            });
-
             Container panelPrincipal = frame.getContentPane();
-            panelPrincipal.setLayout(new BorderLayout());
+            panelPrincipal.setLayout(new CardLayout());
 
-            JPanel panelDeJuego = new JPanel();
-            panelDeJuego.setLayout(new GridLayout());
+            panelPrincipal.add(this.crearPanelDeJuego(), "Panel de juego");
+            panelPrincipal.add(this.crearPanelDeResultados(), "Panel de resultados");
 
-            panelTablero = new JPanel();
-            panelTablero.setLayout(new GridLayout(7, 11));
-
-            this.actualizarTablero();
-
-            panelPrincipal.add(panelTablero, BorderLayout.CENTER);
-
-            Container panelJugadores = new JPanel();
-            panelJugadores.setLayout(new GridLayout(10, 1));
-            panelJugadores.setPreferredSize(new Dimension(150, 0));
-
-            listaDeJugadores = new JList<>();
-            listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
-
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof IJugador) {
-                        IJugador jugador = (IJugador) value;
-                        setText(jugador.getId());
-                        if (jugador.equals(jugadorCliente)) {
-                            setForeground(Color.RED);
-                        }
-                    }
-                    return this;
-                }
-            });
-            listaDeJugadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-            listaDeJugadores.addListSelectionListener(evento -> {
-                int indiceDelJugador = evento.getFirstIndex();
-                IJugador jugador = listaDeJugadores.getModel().getElementAt(indiceDelJugador);
-                boolean esMiTurno = panelTablero.getCursor().getType() != Cursor.WAIT_CURSOR;
-                if (esMiTurno) {
-                    if (cartaSeleccionada != null) {
-                        boolean resultadoAccion = false;
-                        if (cartaSeleccionada instanceof CartaDeAccion) {
-                            boolean dispararAccion = true;
-                            if (ultimoClicSobreJugador == -1) {
-                                ultimoClicSobreJugador = System.currentTimeMillis();
-                            } else {
-                                long ahora = System.currentTimeMillis();
-                                if ((ahora - ultimoClicSobreJugador < 1000000000)) {
-                                    ultimoClicSobreJugador = ahora;
-                                    dispararAccion = false;
-                                }
-                            }
-                            if (dispararAccion) {
-                                System.out.println("Hiciste clic en el usuario " + jugador.getId());
-                                resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
-                                if (resultadoAccion) {
-                                    Component componentToRemove = null;
-                                    for (Component component : panelMano.getComponents()) {
-                                        if (component instanceof CartaMano) {
-                                            CartaDeJuego carta = ((CartaMano) component).getCarta();
-                                            if (carta == cartaSeleccionada) {
-                                                componentToRemove = component;
-                                            }
-                                        }
-                                    }
-                                    if (componentToRemove != null) {
-                                        panelMano.remove(componentToRemove);
-                                        panelMano.revalidate();
-                                        panelMano.repaint();
-                                    }
-                                    cartaSeleccionada = null;
-                                    controladorJuego.terminarTurno();
-                                } else {
-                                    System.err.println("Ocurrió un error");
-                                }
-                            }
-                        } else {
-                            System.err.println("No seleccionaste una carta de acción");
-                        }
-                    } else {
-                        System.err.println("No seleccionaste ninguna carta");
-                    }
-                } else {
-                    System.err.println("No es tu turno todavía");
-                }
-                listaDeJugadores.clearSelection();
-            });
-
-            panelJugadores.add(listaDeJugadores);
-
-            panelPrincipal.add(panelJugadores, BorderLayout.WEST);
-
-            this.actualizarJugadores();
-
-            if (this.jugadorCliente.esMiTurno()) {
-                panelTablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            } else {
-                panelTablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            }
-
-            JComponent panelChat = new JPanel();
-            // panelChat.setSize(100, 500);
-            panelChat.setLayout(new GridLayout(2, 1));
-            panelChat.add(chat);
-
-            JComponent panelInferiorChat = new JPanel();
-            panelInferiorChat.setLayout(new FlowLayout());
-            panelInferiorChat.add(textoDelUsuario);
-            panelInferiorChat.add(botonEnviar);
-            panelChat.add(panelInferiorChat);
-            panelChat.setPreferredSize(new Dimension(200, 0));
-
-            panelPrincipal.add(panelChat, BorderLayout.EAST);
-
-            panelMano = new JPanel();
-            panelMano.setLayout(new GridLayout(1, 10));
-            panelMano.add(botonListo);
-            panelMano.setPreferredSize(new Dimension(0, 200));
-            panelPrincipal.add(panelMano, BorderLayout.SOUTH);
             frame.setVisible(true);
         });
+    }
+
+    private Container crearPanelDeResultados() {
+        // TODO Auto-generated method stub
+        return new JPanel();
+    }
+
+    private Container crearPanelDeJuego() {
+        chat = new JList<>();
+        chat.setCellRenderer(new DefaultListCellRenderer() {
+
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Mensaje) {
+                    Mensaje mensaje = (Mensaje) value;
+                    setText(mensaje.obtenerOrigen() + ": " + mensaje.getTexto());
+                    if (mensaje.esDelSistema()) {
+                        setForeground(Color.RED);
+                    }
+                }
+                return this;
+            }
+        });
+
+        JTextField textoDelUsuario = new JTextField();
+        textoDelUsuario.setSize(500, 20);
+        textoDelUsuario.setText("Escribir mensaje");
+
+        botonEnviar = new JButton("Enviar");
+
+        botonEnviar.addActionListener(event -> {
+            String text = textoDelUsuario.getText();
+            if (text != null && !text.isEmpty()) {
+                controladorJuego.enviarMensaje(new Mensaje(this.jugadorCliente, text));
+            }
+            textoDelUsuario.setText("Escribir mensaje");
+        });
+
+        textoDelUsuario.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if ("\n".charAt(0) == e.getKeyChar() && textoDelUsuario.getText().length() > 0) {
+                    System.out.println("Clicked");
+                    botonEnviar.doClick();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // Sin implementación
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Sin implementación
+            }
+        });
+
+        botonListo = new JButton("Listo");
+        botonListo.addActionListener(evento -> {
+            botonListo.setEnabled(false);
+            controladorJuego.marcarListo(jugadorCliente);
+        });
+
+        Container panelDeJuego = new JPanel();
+        panelDeJuego.setLayout(new BorderLayout());
+
+        panelTablero = new JPanel();
+        panelTablero.setLayout(new GridLayout(7, 11));
+
+        this.actualizarTablero();
+
+        panelDeJuego.add(panelTablero, BorderLayout.CENTER);
+
+        Container panelJugadores = new JPanel();
+        panelJugadores.setLayout(new GridLayout(10, 1));
+        panelJugadores.setPreferredSize(new Dimension(150, 0));
+
+        listaDeJugadores = new JList<>();
+        listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
+
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof IJugador) {
+                    IJugador jugador = (IJugador) value;
+                    setText(jugador.getId());
+                    if (jugador.equals(jugadorCliente)) {
+                        setForeground(Color.RED);
+                    }
+                }
+                return this;
+            }
+        });
+        listaDeJugadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        listaDeJugadores.addListSelectionListener(evento -> {
+            int indiceDelJugador = evento.getFirstIndex();
+            IJugador jugador = listaDeJugadores.getModel().getElementAt(indiceDelJugador);
+
+            if (jugadorCliente.esMiTurno()) {
+                if (cartaSeleccionada != null) {
+                    boolean resultadoAccion = false;
+                    if (cartaSeleccionada instanceof CartaDeAccion) {
+                        boolean dispararAccion = true;
+                        /*
+                        if (ultimoClicSobreJugador == -1) {
+                            ultimoClicSobreJugador = System.currentTimeMillis();
+                        } else {
+                            long ahora = System.currentTimeMillis();
+                            if ((ahora - ultimoClicSobreJugador < 1000000000)) {
+                                ultimoClicSobreJugador = ahora;
+                                dispararAccion = false;
+                            }
+                        }
+                        */
+                        if (dispararAccion) {
+                            System.out.println("Hiciste clic en el usuario " + jugador.getId());
+                            resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
+                            if (resultadoAccion) {
+                                //removerCartaSeleccionadaDeLaMano();
+                                controladorJuego.avanzar();
+                            } else {
+                                System.err.println("Ocurrió un error");
+                            }
+                        }
+                    } else {
+                        System.err.println("No seleccionaste una carta de acción");
+                    }
+                } else {
+                    System.err.println("No seleccionaste ninguna carta");
+                }
+            } else {
+                System.err.println("No es tu turno todavía");
+            }
+            listaDeJugadores.clearSelection();
+        });
+
+        panelJugadores.add(listaDeJugadores);
+
+        panelDeJuego.add(panelJugadores, BorderLayout.WEST);
+
+        this.actualizarJugadores();
+
+        if (this.jugadorCliente.esMiTurno()) {
+            panelTablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            panelTablero.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
+
+        JComponent panelChat = new JPanel();
+        // panelChat.setSize(100, 500);
+        panelChat.setLayout(new GridLayout(2, 1));
+        panelChat.add(chat);
+
+        JComponent panelInferiorChat = new JPanel();
+        panelInferiorChat.setLayout(new FlowLayout());
+        panelInferiorChat.add(textoDelUsuario);
+        panelInferiorChat.add(botonEnviar);
+        panelChat.add(panelInferiorChat);
+        panelChat.setPreferredSize(new Dimension(200, 0));
+
+        panelDeJuego.add(panelChat, BorderLayout.EAST);
+
+        panelMano = new JPanel();
+        panelMano.setLayout(new GridLayout(1, 10));
+        panelMano.add(botonListo);
+        panelMano.setPreferredSize(new Dimension(0, 200));
+        panelDeJuego.add(panelMano, BorderLayout.SOUTH);
+
+        return panelDeJuego;
+    }
+
+    private void removerCartaSeleccionadaDeLaMano() {
+        Component componentToRemove = null;
+        for (Component component : panelMano.getComponents()) {
+            if (component instanceof CartaMano) {
+                CartaDeJuego carta = ((CartaMano) component).getCarta();
+                if (carta == cartaSeleccionada) {
+                    componentToRemove = component;
+                }
+            }
+        }
+        if (componentToRemove != null) {
+            panelMano.remove(componentToRemove);
+            panelMano.revalidate();
+            panelMano.repaint();
+        }
+        cartaSeleccionada = null;
     }
 
     @Override
@@ -349,8 +370,10 @@ public class VistaGrafica implements IVista {
         this.actualizar();
     }
 
-    private void actualizarMano() {
+    public void actualizarMano() {
         panelMano.removeAll();
+
+        actualizarJugadores();
 
         for (CartaDeJuego carta : this.jugadorCliente.getMano()) {
             CartaMano cartaLabel = new CartaMano(carta, controladorJuego);
@@ -409,6 +432,83 @@ public class VistaGrafica implements IVista {
         this.actualizarMano();
     }
 
+    @Override
+    public void mostrarResultados() {
+        
+    }
+
+    public String obtenerRepresentacion(CartaDeJuego carta, JLabel label) {
+        if (carta == null) {
+            return "X";
+        }
+
+        StringBuilder sb = new StringBuilder("<html><pre>");
+        if (carta instanceof CartaDeAccion) {
+            sb.append(carta.getId() + "<br>");
+            sb.append("A<br>");
+            CartaDeAccion c = (CartaDeAccion) carta;
+            if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
+                sb.append("DERRUMBE");
+            } else if (c.getTipos().contains(TipoCartaAccion.MAPA)) {
+                sb.append("MAPA");
+            } else {
+                sb.append(c.getTipos().stream().map(TipoCartaAccion::name).collect(Collectors.joining("<br>")));
+            }
+        } else if (carta instanceof CartaDeTunel) {
+            CartaDeTunel c = (CartaDeTunel) carta;
+            if (c.getTipo() == TipoCartaTunel.INICIO
+                    || c.getTipo() == TipoCartaTunel.DESTINO_ORO
+                    || c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
+                label.setBackground(Color.BLACK);
+                label.setForeground(Color.WHITE);
+            }
+            if (!c.isVisible()) {
+                sb.append("    ?    ");
+            } else if (c.getTipo() == TipoCartaTunel.DESTINO_ORO) {
+                sb.append("   ORO   ");
+                label.setBackground(Color.YELLOW);
+                label.setForeground(Color.BLACK);
+            } else if (c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA){
+                sb.append("..PIEDRA..");
+                label.setBackground(Color.GRAY);
+                label.setForeground(Color.BLACK);
+            } else {
+                sb.append(carta.getId());
+                List<Entrada> entradas = c.getEntradas();
+                if (entradas.contains(Entrada.NORTE)) {
+                    sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
+                } else {
+                    sb.append("         ");
+                }
+                sb.append("<br>");
+                if (entradas.contains(Entrada.OESTE)) {
+                    sb.append("&#8592;   ");
+                } else {
+                    sb.append("    ");
+                }
+                if (c.isSinSalida()) {
+                    sb.append("x");
+                } else {
+                    sb.append(" ");
+                }
+                if (entradas.contains(Entrada.ESTE)) {
+                    sb.append("   &#8594;");
+                } else {
+                    sb.append("    ");
+                }
+                sb.append("<br>");
+                if (entradas.contains(Entrada.SUR)) {
+                    sb.append("    &#8595;    ");
+                } else {
+                    sb.append("         ");
+                }
+            }
+        }
+     // https://stackoverflow.com/questions/1090098/newline-in-jlabel
+        sb.append("</pre></html>");
+        return sb.toString();
+    }
+
     /**
      * Representa un espacio (slot) en el tablero, que puede estar libre o no.
      *
@@ -426,6 +526,7 @@ public class VistaGrafica implements IVista {
     
         public CartaTablero(CartaDeJuego carta, Integer x, Integer y, ControladorJuego controlador) {
             super();
+            this.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
             this.x = x;
             this.y = y;
             this.setCarta(carta);
@@ -452,22 +553,8 @@ public class VistaGrafica implements IVista {
                                     resultadoAccion = controlador.jugarCarta((CartaDeAccion) cartaSeleccionada);
                                 }
                                 if (resultadoAccion) {
-                                    Component componentToRemove = null;
-                                    for (Component component : panelMano.getComponents()) {
-                                        if (component instanceof CartaMano) {
-                                            CartaDeJuego carta = ((CartaMano) component).getCarta();
-                                            if (carta == cartaSeleccionada) {
-                                                componentToRemove = component;
-                                            }
-                                        }
-                                    }
-                                    if (componentToRemove != null) {
-                                        panelMano.remove(componentToRemove);
-                                        panelMano.revalidate();
-                                        panelMano.repaint();
-                                    }
-                                    cartaSeleccionada = null;
-                                    controladorJuego.terminarTurno();
+                                    //removerCartaSeleccionadaDeLaMano();
+                                    controladorJuego.avanzar();
                                 } else {
                                     System.err.println("Ocurrió un error");
                                 }
@@ -501,76 +588,9 @@ public class VistaGrafica implements IVista {
         public void setCarta(CartaDeJuego carta) {
             // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
-            if (carta == null) {
-                this.setText("X");
-            } else {
-                StringBuilder sb = new StringBuilder("<html><pre>");
-                if (carta instanceof CartaDeAccion) {
-                    sb.append(carta.getId() + "<br>");
-                    sb.append("A<br>");
-                    CartaDeAccion c = (CartaDeAccion) carta;
-                    if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
-                        sb.append("D");
-                    } else if (c.getTipos().contains(TipoCartaAccion.MAPA)) {
-                        sb.append("D");
-                    } else if (c.esCartaDeHerramientaReparada()) {
-                        sb.append("REP");
-                    } else if (c.esCartaDeHerramientaRota()) {
-                        sb.append("ROT");
-                    }
-                } else if (carta instanceof CartaDeTunel) {
-                    CartaDeTunel c = (CartaDeTunel) carta;
-                    if (c.getTipo() == TipoCartaTunel.INICIO
-                            || c.getTipo() == TipoCartaTunel.DESTINO_ORO
-                            || c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
-                        this.setBackground(Color.BLACK);
-                        this.setForeground(Color.WHITE);
-                    }
-                    if (c.estaDadaVuelta()) {
-                        sb.append("    ?    ");
-                    } else if (c.getTipo() == TipoCartaTunel.DESTINO_ORO) {
-                        sb.append("   ORO   ");
-                        this.setBackground(Color.YELLOW);
-                        this.setForeground(Color.BLACK);
-                    } else if (c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA){
-                        sb.append("..PIEDRA..");
-                        this.setBackground(Color.GRAY);
-                        this.setForeground(Color.BLACK);
-                    } else {
-                        sb.append(carta.getId());
-                        List<Entrada> entradas = c.getEntradas();
-                        if (entradas.contains(Entrada.NORTE)) {
-                            sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                        sb.append("<br>");
-                        if (entradas.contains(Entrada.OESTE)) {
-                            sb.append("&#8592;   ");
-                        } else {
-                            sb.append("    ");
-                        }
-                        if (c.isSinSalida()) {
-                            sb.append("x");
-                        } else {
-                            sb.append(" ");
-                        }
-                        if (entradas.contains(Entrada.ESTE)) {
-                            sb.append("   &#8594;");
-                        } else {
-                            sb.append("    ");
-                        }
-                        sb.append("<br>");
-                        if (entradas.contains(Entrada.SUR)) {
-                            sb.append("    &#8595;    ");
-                        } else {
-                            sb.append("         ");
-                        }
-                    }
-                }
-                // https://stackoverflow.com/questions/1090098/newline-in-jlabel
-                sb.append("</pre></html>");
-                this.setText(sb.toString());
+
+            this.setText(obtenerRepresentacion(carta, this));
+            if (carta != null) {
                 this.carta.setPosicion(this.x, this.y);
             }
         }
@@ -599,6 +619,7 @@ public class VistaGrafica implements IVista {
     
         public CartaMano(CartaDeJuego carta, ControladorJuego controlador) {
             super();
+            this.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
             this.setCarta(carta);
     
             addMouseListener(new MouseAdapter() {
@@ -607,8 +628,14 @@ public class VistaGrafica implements IVista {
                 public void mouseClicked(MouseEvent event) {
                     System.out.println("[" + jugadorCliente.getId() + "] -> " + jugadorCliente.esMiTurno());
                     if (jugadorCliente.esMiTurno()) {
-                        cartaSeleccionada = carta;
-                        System.out.println("Seleccionaste la carta " + carta.getId());
+                        if (event.getButton() == MouseEvent.BUTTON1) {
+                            cartaSeleccionada = carta;
+                            System.out.println("Seleccionaste la carta " + carta.getId());
+                        } else if (event.getButton() == MouseEvent.BUTTON3) {
+                            cartaSeleccionada = null;
+                            controladorJuego.descartar(carta);
+                            controladorJuego.avanzar();
+                        }
                     } else {
                         System.err.println("No es tu turno todavía");
                     }
@@ -633,53 +660,7 @@ public class VistaGrafica implements IVista {
         public void setCarta(CartaDeJuego carta) {
             // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
-            StringBuilder sb = new StringBuilder("<html><pre>");
-            sb.append(carta.getId());
-            if (carta instanceof CartaDeAccion) {
-                sb.append(" A ");
-                CartaDeAccion c = (CartaDeAccion) carta;
-                if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
-                    sb.append("D");
-                } else if (c.getTipos().contains(TipoCartaAccion.MAPA)) {
-                    sb.append("D");
-                } else if (c.esCartaDeHerramientaReparada()) {
-                    sb.append("REP");
-                } else if (c.esCartaDeHerramientaRota()) {
-                    sb.append("ROT");
-                }
-            } else if (carta instanceof CartaDeTunel) {
-                CartaDeTunel c = (CartaDeTunel) carta;
-                List<Entrada> entradas = c.getEntradas();
-                if (entradas.contains(Entrada.NORTE)) {
-                    sb.append(carta.getId() < 10 ? "   &#8593;    " : "  &#8593;    ");
-                } else {
-                    sb.append("         ");
-                }
-                sb.append("<br>");
-                if (entradas.contains(Entrada.OESTE)) {
-                    sb.append("&#8592;   ");
-                } else {
-                    sb.append("    ");
-                }
-                if (c.isSinSalida()) {
-                    sb.append("x");
-                } else {
-                    sb.append(" ");
-                }
-                if (entradas.contains(Entrada.ESTE)) {
-                    sb.append("   &#8594;");
-                } else {
-                    sb.append("    ");
-                }
-                sb.append("<br>");
-                if (entradas.contains(Entrada.SUR)) {
-                    sb.append("    &#8595;    ");
-                } else {
-                    sb.append("         ");
-                }
-            }
-            sb.append("</pre></html>");
-            this.setText(sb.toString());
+            this.setText(obtenerRepresentacion(carta, this));
         }
     }
 
@@ -755,5 +736,6 @@ public class VistaGrafica implements IVista {
         @Override
         public void mouseMoved(MouseEvent e) {
     
-        }}
+        }
+    }
 }

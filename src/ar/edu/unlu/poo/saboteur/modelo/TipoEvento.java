@@ -11,5 +11,7 @@ public enum TipoEvento {
     PASA_TURNO,
     INICIA_JUEGO,
     MOSTRAR_CARTA_DE_DESTINO,
-    CARTA_DERRUMBADA;
+    CARTA_DERRUMBADA,
+    FIN_RONDA,
+    FIN_JUEGO;
 }

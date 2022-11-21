@@ -24,7 +24,7 @@ public class CartaDeTunel extends CartaDeJuego {
     private CartaDeTunel sur;
     private CartaDeTunel este;
     private CartaDeTunel oeste;
-    private boolean dadaVuelta;
+    private boolean visible;
 
     public CartaDeTunel(int id, TipoCartaTunel tipo, boolean sinSalida, List<Entrada> entradas) {
         super(id);
@@ -32,7 +32,7 @@ public class CartaDeTunel extends CartaDeJuego {
         this.sinSalida = sinSalida;
         this.entradas = entradas;
         this.yaRevisada = false;
-        this.dadaVuelta = false;
+        this.visible = true;
     }
 
     public TipoCartaTunel getTipo() {
@@ -165,23 +165,31 @@ public class CartaDeTunel extends CartaDeJuego {
     }
 
     public void derrumbar() {
-        this.norte.setSur(null);
-        this.norte = null;
+        if (this.norte != null) {
+            this.norte.setSur(null);
+            this.norte = null;
+        }
 
-        this.sur.setNorte(null);
-        this.sur = null;
+        if (this.sur != null) {
+            this.sur.setNorte(null);
+            this.sur = null;
+        }
 
-        this.oeste.setEste(null);
-        this.oeste = null;
+        if (this.oeste != null) {
+            this.oeste.setEste(null);
+            this.oeste = null;
+        }
 
-        this.este.setOeste(null);
-        this.este = null;
+        if (this.este != null) {
+            this.este.setOeste(null);
+            this.este = null;
+        }
 
         this.setPosicion(null, null);
     }
 
     public boolean colisionaCon(CartaDeJuego carta) {
-        return this.getX() == carta.getX() && this.getY() == carta.getY();
+        return this.getX().equals(carta.getX()) && this.getY().equals(carta.getY());
     }
 
     /**
@@ -291,11 +299,11 @@ public class CartaDeTunel extends CartaDeJuego {
         this.yaRevisada = yaRevisada;
     }
 
-    public boolean estaDadaVuelta() {
-        return dadaVuelta;
+    public boolean isVisible() {
+        return visible;
     }
 
-    public void setDadaVuelta(boolean dadaVuelta) {
-        this.dadaVuelta = dadaVuelta;
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

@@ -160,9 +160,6 @@ public class Juego extends ObservableRemoto implements IJuego {
             this.enviarMensajeDeSistema(mensaje);
 
             this.verificarCondicionDeLlegadaADestino(carta);
-            if (this.cartaDeDestinoOro.estaDadaVuelta()) {
-                // TODO EXE - Finaliza la ronda
-            }
             return true;
         }
         return false;
@@ -171,7 +168,7 @@ public class Juego extends ObservableRemoto implements IJuego {
     private void verificarCondicionDeLlegadaADestino(CartaDeTunel carta) {
         this.cartasDeDestino.forEach(destino -> {
             if (destino.estaConectadaConCarta(carta)) {
-                destino.setDadaVuelta(false);
+                destino.setVisible(true);
             }
         });
     }
@@ -211,32 +208,50 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public boolean jugarCarta(CartaDeAccion carta) throws RemoteException {
+    public boolean jugarCarta(CartaDeAccion cartaCliente) throws RemoteException {
         // TODO EXE - Podría desambiguar esto en dos métodos, uno que reciba ICartaDeDerrumbe
         //  y otro para ICartaDeMapa
-        if (carta.getTipos().get(0) == TipoCartaAccion.DERRUMBE) {
-            CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(carta);
-            if (cartaADerrumbar != null) {
+        CartaDeAccion cartaDeAccion = this.obtenerCartaDeAccionAPartirDeCliente(cartaCliente);
+        cartaDeAccion.setPosicion(cartaCliente.getX(), cartaCliente.getY());
+
+        if (cartaDeAccion.getTipos().get(0) == TipoCartaAccion.DERRUMBE) {
+            CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(cartaDeAccion);
+            if (cartaADerrumbar != null && !esCartaInicial(cartaADerrumbar)) {
                 cartaADerrumbar.derrumbar();
                 this.descartarCarta(cartaADerrumbar, this.obtenerJugadorDelTurnoActual());
+                this.descartarCarta(cartaDeAccion, this.obtenerJugadorDelTurnoActual());
+
+                String mensaje = String.format("[%s] usó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), cartaCliente.getId(), cartaCliente.getX(), cartaCliente.getY());
+                this.enviarMensajeDeSistema(mensaje);
+                return true;
             } else {
                 return false;
             }
-        } else if (carta.getTipos().get(0) == TipoCartaAccion.MAPA) {
-            CartaDeTunel destino = this.obtenerCartaQueColisiona(carta);
-            if (destino != null) {
-                Evento evento = new Evento(TipoEvento.MOSTRAR_CARTA_DE_DESTINO, destino, this.obtenerJugadorDelTurnoActual());
-                try {
-                    this.notificarObservadores(evento);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                    return false;
-                }
+        } else if (cartaDeAccion.getTipos().get(0) == TipoCartaAccion.MAPA) {
+            CartaDeTunel destino = this.obtenerCartaQueColisiona(cartaDeAccion);
+            if (destino != null && esCartaDeDestino(destino)) {
+                String mensajeGeneral = String.format("[%s] vio la carta de destino en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), cartaCliente.getX(), cartaCliente.getY());
+                this.enviarMensajeDeSistema(mensajeGeneral);
+
+                // TODO EXE - Esto debería ser solo para el jugador que jugó la carta de mapa
+                String mensajeParaJugador = String.format("La carta que miraste es %s", destino.getTipo() == TipoCartaTunel.DESTINO_ORO ? "ORO" : "PIEDRA");
+                this.enviarMensajeDeSistema(mensajeParaJugador);
+                this.descartarCarta(cartaDeAccion, this.obtenerJugadorDelTurnoActual());
+                return true;
+            } else {
+                return false;
             }
+        } else {
+            return false;
         }
-        String mensaje = String.format("[%s] usó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), carta.getId(), carta.getX(), carta.getY());
-        this.enviarMensajeDeSistema(mensaje);
-        return true;
+    }
+
+    private boolean esCartaInicial(CartaDeTunel carta) {
+        return carta == this.cartaDeInicio || esCartaDeDestino(carta);
+    }
+
+    private boolean esCartaDeDestino(CartaDeTunel carta) {
+        return this.cartasDeDestino.contains(carta);
     }
 
     private boolean validarColision(CartaDeTunel carta) {
@@ -312,12 +327,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.mezclarMazo();
         this.asignarRoles();
         this.asignarTurno();
-        // TODO EXE - La cantidad de cartas a repartir depende de la cantidad de jugadores
-        for (int i = 0; i < 10; i++) {
-            for (IJugador jugador : jugadores) {
-                jugador.getMano().add(this.mazo.remove(0));
-            }
-        }
+        this.repartirCartas();
 
         // Esto solo hay que hacerlo en las rondas 2 y 3
         //this.inicializarRonda();
@@ -326,6 +336,15 @@ public class Juego extends ObservableRemoto implements IJuego {
 
         Evento evento = new Evento(TipoEvento.INICIA_JUEGO, jugadores, this.tablero);
         this.notificarObservadores(evento);
+    }
+
+    private void repartirCartas() {
+        // TODO EXE - La cantidad de cartas a repartir depende de la cantidad de jugadores
+        for (int i = 0; i < 10; i++) {
+            for (IJugador jugador : jugadores) {
+                jugador.getMano().add(this.mazo.remove(0));
+            }
+        }
     }
 
     private void asignarTurno() {
@@ -426,6 +445,7 @@ public class Juego extends ObservableRemoto implements IJuego {
     public boolean descartar(CartaDeJuego cartaCliente) throws RemoteException {
         CartaDeJuego carta = this.obtenerCartaDeJuegoAPartirDelCliente(cartaCliente);
         this.descartarCarta(carta, this.obtenerJugadorDelTurnoActual());
+        this.enviarMensajeDeSistema("[" + this.obtenerJugadorDelTurnoActual().getId() + "] descartó una carta");
         return true;
     }
 
@@ -444,7 +464,12 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public CartaDeJuego tomarCarta() throws RemoteException {
-        return this.mazo.remove(0);
+        if (!this.mazo.isEmpty()) {
+            CartaDeJuego carta = this.mazo.remove(0);
+            this.obtenerJugadorDelTurnoActual().getMano().add(carta);
+            return carta;
+        }
+        return null;
     }
 
     @Override
@@ -467,12 +492,33 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public void terminarTurno(IJugador jugador) throws RemoteException {
-        this.incrementarTurno();
-        try {
-            this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
-        } catch (RemoteException e) {
-            e.printStackTrace();
+    public void avanzar() throws RemoteException {
+        if (this.cartaDeDestinoOro.isVisible()) { // Condición de fin de ronda
+            if (estadoPartida == EstadoPartida.TERCERA_RONDA) {
+                this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
+                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+                
+            } else {
+                this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
+                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+            }
+        } else {
+            this.incrementarTurno();
+            try {
+                this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    /**
+     * Evalúa si se cumplen las condiciones para que termine la ronda.
+     * 
+     * @return true si se llegó a la carta de oro o si no se llegó y además ya no quedan cartas por jugar
+     */
+    private boolean terminoLaRonda() {
+        return this.cartaDeDestinoOro.isVisible()
+                || (this.mazo.isEmpty() && this.jugadores.stream().allMatch(jugador -> jugador.getMano().isEmpty()));
     }
 }

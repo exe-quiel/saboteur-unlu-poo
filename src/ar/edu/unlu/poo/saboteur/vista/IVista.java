@@ -27,4 +27,8 @@ public interface IVista {
     public void setJugador(IJugador obtenerJugador);
 
     public void actualizar();
+
+    public void mostrarResultados();
+
+    public void actualizarMano();
 }

@@ -107,7 +107,7 @@ public class CreadorDeCartas {
                     cartaDeTunel.setPosicion(8, 4);
                     break;
                 }
-                cartaDeTunel.setDadaVuelta(true);
+                cartaDeTunel.setVisible(false);
             }
             cartas.add(cartaDeTunel);
         }

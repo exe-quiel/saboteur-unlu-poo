@@ -3,6 +3,7 @@ package ar.edu.unlu.poo.saboteur.controlador;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
@@ -48,6 +49,12 @@ public class ControladorJuego implements IControladorRemoto {
                 break;
             case INICIA_JUEGO:
                 vista.iniciarJuego(evento);
+                break;
+            case FIN_RONDA:
+                vista.actualizar();
+                break;
+            case FIN_JUEGO:
+                vista.mostrarResultados();
                 break;
             default:
                 break;
@@ -147,9 +154,10 @@ public class ControladorJuego implements IControladorRemoto {
         return null;
     }
 
-    public void terminarTurno() {
+    public void avanzar() {
         try {
-            this.juego.terminarTurno(this.vista.getJugador());
+            this.tomarCarta();
+            this.juego.avanzar();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -162,5 +170,25 @@ public class ControladorJuego implements IControladorRemoto {
     @Override
     public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
         this.juego = (IJuego) arg0;
+    }
+
+    public void descartar(CartaDeJuego carta) {
+        try {
+            this.juego.descartar(carta);
+            //vista.actualizarMano();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public CartaDeJuego tomarCarta() {
+        try {
+            CartaDeJuego carta = this.juego.tomarCarta();
+            //vista.actualizarMano();
+            return carta;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

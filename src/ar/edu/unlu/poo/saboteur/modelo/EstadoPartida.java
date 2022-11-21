@@ -2,9 +2,19 @@ package ar.edu.unlu.poo.saboteur.modelo;
 
 public enum EstadoPartida {
 
-    LOBBY,
-    PRIMERA_RONDA,
-    SEGUNDA_RONDA,
-    TERCERA_RONDA,
-    FINAL;
+    RESULTADOS(null),
+    TERCERA_RONDA(RESULTADOS),
+    SEGUNDA_RONDA(TERCERA_RONDA),
+    PRIMERA_RONDA(SEGUNDA_RONDA),
+    LOBBY(PRIMERA_RONDA);
+
+    private EstadoPartida siguienteEstado;
+
+    private EstadoPartida(EstadoPartida siguienteEstado) {
+        this.siguienteEstado = siguienteEstado;
+    }
+
+    public EstadoPartida getSiguienteEstado() {
+        return siguienteEstado;
+    }
 }
