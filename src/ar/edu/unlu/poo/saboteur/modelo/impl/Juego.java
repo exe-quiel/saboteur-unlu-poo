@@ -538,28 +538,58 @@ public class Juego extends ObservableRemoto implements IJuego {
     public void avanzar() throws RemoteException {
         if (terminoLaRonda()) { // Condición de fin de ronda
             if (ganaronLosBuscadores()) {
-                List<IJugador> buscadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.BUSCADOR).collect(Collectors.toList());
-                List<CartaDePuntos> pepitasARepartir = new ArrayList<>();
-                int cantidadDePepitasARepartir = this.jugadores.size() < 10 ? this.jugadores.size() : 9;
-                for (int i = 0; i < cantidadDePepitasARepartir; i++) {
-                    int indiceBuscador = i % buscadores.size();
-                    buscadores.get(indiceBuscador).recibirPuntos(this.cartasDePuntos.remove(0));
+                System.out.println("Ganaron los buscadores");
+                if (this.cartasDePuntos.isEmpty()) {
+                    System.err.println("No quedan cartas de puntos");
+                } else {
+                    List<IJugador> buscadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.BUSCADOR).collect(Collectors.toList());
+                    int cantidadDePepitasARepartir = this.jugadores.size() < 10 ? this.jugadores.size() : 9;
+                    for (int i = 0; i < cantidadDePepitasARepartir; i++) {
+                        // TODO EXE - Esto es lo mismo de más abajo. Extraer a un método
+                        int indiceBuscador = i % buscadores.size();
+                        IJugador jugador = buscadores.get(indiceBuscador);
+                        CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                        jugador.recibirPuntos(cartaDePuntos);
+                        System.out.println("Buscador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
+                    }
                 }
             } else if (ganaronLosSaboteadores()) {
-                List<IJugador> saboteadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.SABOTEADOR).collect(Collectors.toList());
-                if (saboteadores.size() == 1) {
-                    // TODO EXE - Darle 4 pepitas
-                } else if (saboteadores.size() == 2 || saboteadores.size() == 3) {
-                    // TODO EXE - Darle 3 pepitas a cada uno
+                if (this.cartasDePuntos.isEmpty()) {
+                    System.err.println("No quedan cartas de puntos");
                 } else {
-                    // TODO EXE - Darle 2 pepitas a cada uno
+                    System.out.println("Ganaron los saboteadores");
+                    List<IJugador> saboteadores = this.jugadores.stream().filter(jugador -> jugador.getRol() == RolJugador.SABOTEADOR).collect(Collectors.toList());
+                    if (saboteadores.size() == 1) {
+                        // TODO EXE - Darle 4 pepitas
+                        for (int i = 0; i < saboteadores.size(); i++) {
+                            IJugador jugador = saboteadores.get(i);
+                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                            jugador.recibirPuntos(cartaDePuntos);
+                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
+                        }
+                    } else if (saboteadores.size() == 2 || saboteadores.size() == 3) {
+                        // TODO EXE - Darle 3 pepitas a cada uno
+                        for (int i = 0; i < saboteadores.size(); i++) {
+                            IJugador jugador = saboteadores.get(i);
+                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                            jugador.recibirPuntos(cartaDePuntos);
+                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
+                        }
+                    } else {
+                        // TODO EXE - Darle 2 pepitas a cada uno
+                        for (int i = 0; i < saboteadores.size(); i++) {
+                            IJugador jugador = saboteadores.get(i);
+                            CartaDePuntos cartaDePuntos = this.cartasDePuntos.remove(0);
+                            jugador.recibirPuntos(cartaDePuntos);
+                            System.out.println("Saboteador [" + jugador.getId() + "] recibe " + cartaDePuntos.getPuntos() + " puntos");
+                        }
+                    }
                 }
             }
-            if (estadoPartida == EstadoPartida.TERCERA_RONDA) {
-                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+            this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+            if (EstadoPartida.RESULTADOS == estadoPartida) {
                 this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
             } else {
-                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
                 this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
             }
         } else {
