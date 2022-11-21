@@ -29,7 +29,4 @@ public interface IVista {
     public void mostrarTablero();
 
     public void mostrarResultados(TipoEvento tipoEvento);
-
-    public void actualizarMano();
-
 }

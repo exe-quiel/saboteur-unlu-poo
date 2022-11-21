@@ -486,9 +486,7 @@ public class VistaGrafica implements IVista {
         this.mostrarTablero();
     }
 
-    // TODO EXE - No hay motivo para que esto esté en la interfaz. Hacerlo privado
-    @Override
-    public void actualizarMano() {
+    private void actualizarMano() {
         panelMano.removeAll();
 
         if (this.jugadorCliente.getMano().isEmpty()) {
@@ -523,7 +521,7 @@ public class VistaGrafica implements IVista {
             for (int x = -1; x < 10; x++) {
                 CartaDeTunel cartaEnPosicion = null;
                 for (CartaDeTunel cartaDeTunel : tablero) {
-                    if (cartaDeTunel.getX() == x && cartaDeTunel.getY() == y) {
+                    if (cartaDeTunel.getX().equals(x) && cartaDeTunel.getY().equals(y)) {
                         cartaEnPosicion = cartaDeTunel;
                         break;
                     }

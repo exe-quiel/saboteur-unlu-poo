@@ -102,6 +102,7 @@ public class Serializador {
             if (!(o instanceof Collection)) {
                 throw new RuntimeException("Esperaba una colección de elementos pero recibí: " + o.getClass());
             }
+            @SuppressWarnings("unchecked")
             Collection<T> coleccion = (Collection<T>) o;
             for (Object objeto : coleccion) {
                 if (clazz.isInstance(objeto)) {

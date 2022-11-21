@@ -8,6 +8,11 @@ import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 
 public class CartaDeAccion extends CartaDeJuego {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -3807907674421956310L;
+
     private List<TipoCartaAccion> tipos;
 
     public CartaDeAccion(int id) {

@@ -311,7 +311,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             Jugador jugador = new Jugador(indiceIdJugador, nombreJugador);
             jugadores.add(jugador);
             this.enviarMensajeDeSistema(nombreJugador + " se unió a la partida");
-            this.notificarObservadores(new Evento(TipoEvento.ENTRA_JUGADOR, this.jugadores));
+            this.notificarObservadores(new Evento(TipoEvento.ENTRA_JUGADOR));
             indiceIdJugador++;
             return jugador;
         }
@@ -366,7 +366,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
             this.enviarMensajeDeSistema("Comenzó la ronda");
 
-            Evento evento = new Evento(TipoEvento.INICIA_RONDA, this.jugadores, this.tablero);
+            Evento evento = new Evento(TipoEvento.INICIA_RONDA);
             this.notificarObservadores(evento);
             break;
         default:
@@ -547,7 +547,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         IJugador jugador = this.obtenerJugadorAPartirDeCliente(jugadorCliente);
         this.jugadores.remove(jugador);
         try {
-            this.notificarObservadores(new Evento(TipoEvento.SALE_JUGADOR, this.jugadores));
+            this.notificarObservadores(new Evento(TipoEvento.SALE_JUGADOR));
         } catch (RemoteException e) {
             // No hay manera de quitar el observador que se fue
             // porque la librería no da acceso a los observadores
@@ -564,7 +564,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             this.incrementarTurno();
             System.out.println("Siguiente turno: " + this.obtenerJugadorDelTurnoActual().getNombre());
             try {
-                this.notificarObservadores(new Evento(TipoEvento.CAMBIA_TURNO, this.jugadores));
+                this.notificarObservadores(new Evento(TipoEvento.CAMBIA_TURNO));
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -651,6 +651,35 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private List<RolJugador> obtenerRolesParaRepartir() {
         List<RolJugador> roles = new ArrayList<>();
+
+        // Dependiendo de la cantidad de jugadores,
+        // se reparte una cantidad distinta de cada uno de los dos roles
+        switch (this.jugadores.size()) {
+        case 10:
+            roles.add(RolJugador.SABOTEADOR);
+        case 9:
+            roles.add(RolJugador.BUSCADOR);
+        case 8:
+            roles.add(RolJugador.BUSCADOR);
+        case 7:
+            roles.add(RolJugador.SABOTEADOR);
+        case 6:
+            roles.add(RolJugador.BUSCADOR);
+        case 5:
+            roles.add(RolJugador.SABOTEADOR);
+        case 4:
+            roles.add(RolJugador.BUSCADOR);
+        case 3:
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+            break;
+        default:
+            break;
+        }
+        /*
         if (this.jugadores.size() == 3) {
             roles.addAll(Arrays.asList(
                     RolJugador.SABOTEADOR,
@@ -728,6 +757,7 @@ public class Juego extends ObservableRemoto implements IJuego {
                     RolJugador.BUSCADOR,
                     RolJugador.BUSCADOR));
         }
+        */
         Collections.shuffle(roles);
         return roles;
     }
