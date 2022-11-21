@@ -41,7 +41,9 @@ public class ControladorJuego implements IControladorRemoto {
                 vista.actualizarJugadores(evento.getJugadores());
                 break;
             case NUEVO_MENSAJE:
-                vista.actualizarMensajes();
+                if (vista != null) {
+                    vista.actualizarMensajes();
+                }
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
@@ -111,9 +113,9 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public IJugador generarJugador() {
+    public IJugador crearJugador() {
         try {
-            return this.juego.generarJugador();
+            return this.juego.crearJugador();
         } catch (RemoteException e) {
             e.printStackTrace();
         }

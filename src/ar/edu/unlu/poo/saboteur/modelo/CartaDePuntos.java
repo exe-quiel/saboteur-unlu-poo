@@ -1,15 +1,28 @@
 package ar.edu.unlu.poo.saboteur.modelo;
 
-public class CartaDePuntos {
+import java.io.Serializable;
 
-    private byte puntos;
+public class CartaDePuntos implements Serializable {
 
-    public CartaDePuntos(byte puntos) {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 5295887972173370164L;
+    private int id;
+    private int puntos;
+
+    public CartaDePuntos(int id, int puntos) {
         super();
         this.puntos = puntos;
     }
 
-    public byte getPuntos() {
+    public int getId() {
+        return id;
+    }
+
+
+
+    public int getPuntos() {
         return puntos;
     }
 }

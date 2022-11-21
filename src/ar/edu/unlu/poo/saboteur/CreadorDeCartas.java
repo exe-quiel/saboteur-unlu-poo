@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
@@ -21,8 +22,8 @@ import ar.edu.unlu.poo.saboteur.util.Serializador;
 public class CreadorDeCartas {
 
     public static void main(String[] args) {
-        Serializador serializador = new Serializador("assets/cartas.dat");
         List<CartaDeJuego> cartasDeJuego = new ArrayList<>();
+        List<CartaDePuntos> cartasDePuntos = new ArrayList<>();
         Path path = Paths.get("assets");
         Arrays.asList(path.toFile().listFiles((file, name) -> name.endsWith(".csv")))
             .forEach(file -> {
@@ -41,12 +42,21 @@ public class CreadorDeCartas {
                 case "cartas_de_tunel.csv":
                     cartasDeJuego.addAll(crearCartasDeTunel(fileScanner));
                     break;
+                case "cartas_de_pepitas_de_oro.csv":
+                    cartasDePuntos.addAll(crearCartasDePuntos(fileScanner));
+                    break;
                 default:
                     break;
                 }
                 fileScanner.close();
             });
-        serializador.serializar(cartasDeJuego);
+        Serializador serializadorCartasDeJuego = new Serializador("assets/cartas_de_juego.dat");
+        serializadorCartasDeJuego.serializar(cartasDeJuego);
+        System.out.println("Archivo creado: cartas_de_juego.dat");
+
+        Serializador serializadorCartasDePuntos = new Serializador("assets/cartas_de_puntos.dat");
+        serializadorCartasDePuntos.serializar(cartasDePuntos);
+        System.out.println("Archivo creado: cartas_de_puntos.dat");
     }
 
     private static List<CartaDeJuego> crearCartasDeAccion(Scanner fileScanner) {
@@ -68,8 +78,6 @@ public class CreadorDeCartas {
         List<CartaDeJuego> cartas = new ArrayList<>();
         // El primer renglón tiene los nombres de las columnas, así que lo salteo
         fileScanner.next();
-        // Contador para poder saber a cuántas cartas de destino les seteé la posición
-        byte contadorCartaDestino = 0;
         while (fileScanner.hasNext()) {
             String text = fileScanner.next();
             String[] valores = text.split(",");
@@ -95,21 +103,24 @@ public class CreadorDeCartas {
             if (tipo == TipoCartaTunel.INICIO) {
                 cartaDeTunel.setPosicion(0, 2);
             } else if (tipo == TipoCartaTunel.DESTINO_ORO || tipo == TipoCartaTunel.DESTINO_PIEDRA) {
-                contadorCartaDestino++;
-                switch (contadorCartaDestino) {
-                case 1:
-                    cartaDeTunel.setPosicion(8, 0);
-                    break;
-                case 2:
-                    cartaDeTunel.setPosicion(8, 2);
-                    break;
-                case 3:
-                    cartaDeTunel.setPosicion(8, 4);
-                    break;
-                }
                 cartaDeTunel.setVisible(false);
             }
             cartas.add(cartaDeTunel);
+        }
+        return cartas;
+    }
+
+    private static Collection<? extends CartaDePuntos> crearCartasDePuntos(Scanner fileScanner) {
+        List<CartaDePuntos> cartas = new ArrayList<>();
+        // El primer renglón tiene los nombres de las columnas, así que lo salteo
+        fileScanner.next();
+        while (fileScanner.hasNext()) {
+            String text = fileScanner.next();
+            String[] valores = text.split(",");
+            int id = Integer.valueOf(valores[0]);
+            int puntaje = Integer.valueOf(valores[1]);
+            CartaDePuntos cartaDePuntos = new CartaDePuntos(id, puntaje);
+            cartas.add(cartaDePuntos);
         }
         return cartas;
     }

@@ -2,14 +2,15 @@ package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
+import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.EstadoPartida;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;
@@ -30,6 +31,7 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     private List<CartaDeJuego> mazo;
     private List<CartaDeJuego> pilaDeDescarte;
+    private List<CartaDePuntos> cartasDePuntos;
 
     private List<CartaDeTunel> tablero;
     private CartaDeTunel cartaDeInicio;
@@ -46,7 +48,9 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.pilaDeDescarte = new ArrayList<>();
         this.cartasDeDestino = new ArrayList<>();
         this.tablero = new ArrayList<>();
+        this.cartasDePuntos = new ArrayList<>();
         this.cargarCartas();
+        this.aleatorizarPosicionDeCartasDeDestino();
     }
 
     /**
@@ -57,8 +61,8 @@ public class Juego extends ObservableRemoto implements IJuego {
      * 
      */
     private void cargarCartas() {
-        Serializador serializador = new Serializador("assets/cartas.dat");
-        List<CartaDeJuego> cartasDeJuego = serializador.deserializarLista(CartaDeJuego.class);
+        Serializador serializadorCartasDeJuego = new Serializador("assets/cartas_de_juego.dat");
+        List<CartaDeJuego> cartasDeJuego = serializadorCartasDeJuego.deserializarLista(CartaDeJuego.class);
         for (CartaDeJuego cartaDeJuego : cartasDeJuego) {
             boolean agregarAlMazo = true;
             if (cartaDeJuego instanceof CartaDeTunel) {
@@ -81,6 +85,9 @@ public class Juego extends ObservableRemoto implements IJuego {
                 this.mazo.add(cartaDeJuego);
             }
         }
+        Serializador serializadorCartasDePuntos = new Serializador("assets/cartas_de_puntos.dat");
+        List<CartaDePuntos> cartasDePuntos = serializadorCartasDePuntos.deserializarLista(CartaDePuntos.class);
+        this.cartasDePuntos.addAll(cartasDePuntos);
     }
 
     private void agregarAlTablero(CartaDeTunel carta, List<CartaDeTunel> cartasContiguas) {
@@ -218,7 +225,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             CartaDeTunel cartaADerrumbar = this.obtenerCartaQueColisiona(cartaDeAccion);
             if (cartaADerrumbar != null && !esCartaInicial(cartaADerrumbar)) {
                 cartaADerrumbar.derrumbar();
-                this.descartarCarta(cartaADerrumbar, this.obtenerJugadorDelTurnoActual());
+                this.descartarCarta(cartaADerrumbar, this.tablero);
                 this.descartarCarta(cartaDeAccion, this.obtenerJugadorDelTurnoActual());
 
                 String mensaje = String.format("[%s] usó la carta [%s] en (%s,%s)", this.obtenerJugadorDelTurnoActual().getId(), cartaCliente.getId(), cartaCliente.getX(), cartaCliente.getY());
@@ -244,6 +251,10 @@ public class Juego extends ObservableRemoto implements IJuego {
         } else {
             return false;
         }
+    }
+
+    private void descartarCarta(CartaDeTunel cartaADerrumbar, List<CartaDeTunel> tablero) {
+        this.tablero.remove(cartaADerrumbar);
     }
 
     private boolean esCartaInicial(CartaDeTunel carta) {
@@ -286,13 +297,17 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     @Override
-    public IJugador generarJugador() throws RemoteException {
-        String idJugador = "Jugador-" + indiceIdJugador;
-        Jugador jugador = new Jugador(idJugador);
-        jugadores.add(jugador);
-        this.notificarObservadores(new Evento(TipoEvento.JUGADOR_ENTRA, this.jugadores));
-        indiceIdJugador++;
-        return jugador;
+    public IJugador crearJugador() throws RemoteException {
+        if (estadoPartida == EstadoPartida.LOBBY) {
+            String idJugador = "Jugador-" + indiceIdJugador;
+            Jugador jugador = new Jugador(idJugador);
+            jugadores.add(jugador);
+            this.enviarMensajeDeSistema(idJugador + " se unió a la partida");
+            this.notificarObservadores(new Evento(TipoEvento.JUGADOR_ENTRA, this.jugadores));
+            indiceIdJugador++;
+            return jugador;
+        }
+        return null;
     }
 
     private void incrementarTurno() {
@@ -338,9 +353,30 @@ public class Juego extends ObservableRemoto implements IJuego {
         this.notificarObservadores(evento);
     }
 
+    private void aleatorizarPosicionDeCartasDeDestino() {
+        List<Integer[]> posiciones = new ArrayList<>();
+        posiciones.add(new Integer[] {8, 0});
+        posiciones.add(new Integer[] {8, 2});
+        posiciones.add(new Integer[] {8, 4});
+        Collections.shuffle(posiciones);
+        this.cartasDeDestino.forEach(carta -> {
+            Integer[] posicion = posiciones.remove(0);
+            carta.setPosicion(posicion[0], posicion[1]);
+        });
+    }
+
     private void repartirCartas() {
         // TODO EXE - La cantidad de cartas a repartir depende de la cantidad de jugadores
-        for (int i = 0; i < 10; i++) {
+        int cantidadDeJugadores = this.jugadores.size();
+        int cantidadARepartir = -1;
+        if (cantidadDeJugadores >= 3 && cantidadDeJugadores <= 5) {
+            cantidadARepartir = 6;
+        } else if (cantidadDeJugadores == 6 || cantidadDeJugadores == 7) {
+            cantidadARepartir = 5;
+        } else if (cantidadDeJugadores >= 8 && cantidadDeJugadores <= 10) {
+            cantidadARepartir = 4;
+        }
+        for (int i = 0; i < cantidadARepartir; i++) {
             for (IJugador jugador : jugadores) {
                 jugador.getMano().add(this.mazo.remove(0));
             }
@@ -395,11 +431,8 @@ public class Juego extends ObservableRemoto implements IJuego {
     }
 
     private void asignarRoles() {
-        // TODO EXE - Implementar distintas probabilidades según la cantidad de jugadores
-        Random random = new Random();
-        this.jugadores.forEach(jugador -> jugador.setRol(random.nextBoolean()
-                ? RolJugador.SABOTEADOR
-                : RolJugador.BUSCADOR));
+        List<RolJugador> roles = this.obtenerRolesParaRepartir();
+        this.jugadores.forEach(jugador -> jugador.setRol(roles.remove(0)));
     }
 
     private void mezclarMazo() {
@@ -493,17 +526,17 @@ public class Juego extends ObservableRemoto implements IJuego {
 
     @Override
     public void avanzar() throws RemoteException {
-        if (this.cartaDeDestinoOro.isVisible()) { // Condición de fin de ronda
+        if (terminoLaRonda()) { // Condición de fin de ronda
             if (estadoPartida == EstadoPartida.TERCERA_RONDA) {
+                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
                 this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
-                this.estadoPartida = this.estadoPartida.getSiguienteEstado();
-                
             } else {
-                this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
                 this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+                this.notificarObservadores(new Evento(TipoEvento.FIN_RONDA));
             }
         } else {
             this.incrementarTurno();
+            System.out.println("Siguiente turno: " + this.obtenerJugadorDelTurnoActual().getId());
             try {
                 this.notificarObservadores(new Evento(TipoEvento.CAMBIO_TURNO, this.jugadores));
             } catch (RemoteException e) {
@@ -520,5 +553,88 @@ public class Juego extends ObservableRemoto implements IJuego {
     private boolean terminoLaRonda() {
         return this.cartaDeDestinoOro.isVisible()
                 || (this.mazo.isEmpty() && this.jugadores.stream().allMatch(jugador -> jugador.getMano().isEmpty()));
+    }
+
+    private List<RolJugador> obtenerRolesParaRepartir() {
+        List<RolJugador> roles = new ArrayList<>();
+        if (this.jugadores.size() == 3) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 4) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 5) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 6) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 7) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 8) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 9) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        } else if (this.jugadores.size() == 10) {
+            roles.addAll(Arrays.asList(
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.SABOTEADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR,
+                    RolJugador.BUSCADOR));
+        }
+        Collections.shuffle(roles);
+        return roles;
     }
 }

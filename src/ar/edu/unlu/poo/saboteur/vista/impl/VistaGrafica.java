@@ -29,14 +29,17 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputListener;
 
@@ -55,6 +58,8 @@ import ar.edu.unlu.poo.saboteur.vista.IVista;
 public class VistaGrafica implements IVista {
 
     //private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
+
+    final Font FONT = new Font(Font.MONOSPACED, Font.PLAIN, 16);
 
     private ControladorJuego controladorJuego;
 
@@ -134,11 +139,41 @@ public class VistaGrafica implements IVista {
             }
         });
 
+        chat.setFont(FONT);
+        chat.setSelectionModel(new DefaultListSelectionModel() {
+
+            @Override
+            public void setAnchorSelectionIndex(int anchorIndex) {
+                
+            }
+
+            @Override
+            public void setLeadAnchorNotificationEnabled(boolean flag) {
+                
+            }
+
+            @Override
+            public void setLeadSelectionIndex(int leadIndex) {
+                
+            }
+
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                
+            }
+        });
+
+        JScrollPane scrollablePane = new JScrollPane(chat);
+        scrollablePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollablePane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
         JTextField textoDelUsuario = new JTextField();
+        textoDelUsuario.setFont(FONT);
         textoDelUsuario.setSize(500, 20);
         textoDelUsuario.setText("Escribir mensaje");
 
         botonEnviar = new JButton("Enviar");
+        botonEnviar.setFont(FONT);
 
         botonEnviar.addActionListener(event -> {
             String text = textoDelUsuario.getText();
@@ -186,8 +221,7 @@ public class VistaGrafica implements IVista {
         panelDeJuego.add(panelTablero, BorderLayout.CENTER);
 
         Container panelJugadores = new JPanel();
-        panelJugadores.setLayout(new GridLayout(10, 1));
-        panelJugadores.setPreferredSize(new Dimension(150, 0));
+        panelJugadores.setPreferredSize(new Dimension(200, 500));
 
         listaDeJugadores = new JList<>();
         listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
@@ -205,6 +239,7 @@ public class VistaGrafica implements IVista {
             }
         });
         listaDeJugadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listaDeJugadores.setFont(FONT);
 
         listaDeJugadores.addListSelectionListener(evento -> {
             int indiceDelJugador = evento.getFirstIndex();
@@ -215,7 +250,6 @@ public class VistaGrafica implements IVista {
                     boolean resultadoAccion = false;
                     if (cartaSeleccionada instanceof CartaDeAccion) {
                         boolean dispararAccion = true;
-                        /*
                         if (ultimoClicSobreJugador == -1) {
                             ultimoClicSobreJugador = System.currentTimeMillis();
                         } else {
@@ -225,7 +259,6 @@ public class VistaGrafica implements IVista {
                                 dispararAccion = false;
                             }
                         }
-                        */
                         if (dispararAccion) {
                             System.out.println("Hiciste clic en el usuario " + jugador.getId());
                             resultadoAccion = controladorJuego.jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
@@ -263,7 +296,7 @@ public class VistaGrafica implements IVista {
         JComponent panelChat = new JPanel();
         // panelChat.setSize(100, 500);
         panelChat.setLayout(new GridLayout(2, 1));
-        panelChat.add(chat);
+        panelChat.add(scrollablePane);
 
         JComponent panelInferiorChat = new JPanel();
         panelInferiorChat.setLayout(new FlowLayout());
@@ -430,6 +463,7 @@ public class VistaGrafica implements IVista {
         this.actualizarTurno();
         this.actualizarTablero();
         this.actualizarMano();
+        this.actualizarMensajes();
     }
 
     @Override
@@ -437,7 +471,7 @@ public class VistaGrafica implements IVista {
         
     }
 
-    public String obtenerRepresentacion(CartaDeJuego carta, JLabel label) {
+    public String obtenerRepresentacionGraficaCarta(CartaDeJuego carta, JLabel label) {
         if (carta == null) {
             return "X";
         }
@@ -445,7 +479,6 @@ public class VistaGrafica implements IVista {
         StringBuilder sb = new StringBuilder("<html><pre>");
         if (carta instanceof CartaDeAccion) {
             sb.append(carta.getId() + "<br>");
-            sb.append("A<br>");
             CartaDeAccion c = (CartaDeAccion) carta;
             if (c.getTipos().contains(TipoCartaAccion.DERRUMBE)) {
                 sb.append("DERRUMBE");
@@ -469,7 +502,7 @@ public class VistaGrafica implements IVista {
                 label.setBackground(Color.YELLOW);
                 label.setForeground(Color.BLACK);
             } else if (c.getTipo() == TipoCartaTunel.DESTINO_PIEDRA){
-                sb.append("..PIEDRA..");
+                sb.append("  PIEDRA  ");
                 label.setBackground(Color.GRAY);
                 label.setForeground(Color.BLACK);
             } else {
@@ -526,7 +559,7 @@ public class VistaGrafica implements IVista {
     
         public CartaTablero(CartaDeJuego carta, Integer x, Integer y, ControladorJuego controlador) {
             super();
-            this.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+            this.setFont(FONT);
             this.x = x;
             this.y = y;
             this.setCarta(carta);
@@ -589,7 +622,7 @@ public class VistaGrafica implements IVista {
             // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
 
-            this.setText(obtenerRepresentacion(carta, this));
+            this.setText(obtenerRepresentacionGraficaCarta(carta, this));
             if (carta != null) {
                 this.carta.setPosicion(this.x, this.y);
             }
@@ -619,7 +652,7 @@ public class VistaGrafica implements IVista {
     
         public CartaMano(CartaDeJuego carta, ControladorJuego controlador) {
             super();
-            this.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+            this.setFont(FONT);
             this.setCarta(carta);
     
             addMouseListener(new MouseAdapter() {
@@ -660,7 +693,7 @@ public class VistaGrafica implements IVista {
         public void setCarta(CartaDeJuego carta) {
             // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
-            this.setText(obtenerRepresentacion(carta, this));
+            this.setText(obtenerRepresentacionGraficaCarta(carta, this));
         }
     }
 

@@ -45,7 +45,11 @@ public class SaboteurClienteGUI {
             e.printStackTrace();
         }
         IJugador jugador = null;
-        jugador = controladorJuego.generarJugador();
+        jugador = controladorJuego.crearJugador();
+        if (jugador == null) {
+            System.out.println("Partida ya iniciada");
+            System.exit(0);
+        }
         String idJugador = jugador.getId();
         System.out.println("Iniciando cliente [" + idJugador + "] en puerto [" + CLIENT_PORT + "]");
         vista = new VistaGrafica(controladorJuego, jugador);
