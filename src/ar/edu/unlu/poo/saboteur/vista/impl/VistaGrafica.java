@@ -21,7 +21,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,21 +58,26 @@ public class VistaGrafica implements IVista {
 
     //private GeneradorDeImagenes generadorDeImagenes = GeneradorDeImagenes.getInstance();
 
-    final Font FONT = new Font(Font.MONOSPACED, Font.PLAIN, 16);
+    final static Font FONT = new Font(Font.MONOSPACED, Font.PLAIN, 14);
+
+    private Container panelDePaneles;
+    private CardLayout paneles;
+    final static String PANEL_JUEGO = "PanelDeJuego";
+    final static String PANEL_RESULTADOS = "PanelDeResultados";
 
     private ControladorJuego controladorJuego;
 
-    private List<IJugador> jugadores;
     private IJugador jugadorCliente;
     private JButton botonEnviar;
     private JButton botonListo;
     private JComponent panelTablero;
-    private List<CartaDeTunel> tablero;
     private CartaDeJuego cartaSeleccionada;
     // Work-around para que no se disparen varios clics seguido en la lista de jugadores
     private long ultimoClicSobreJugador = -1;
 
     private JPanel panelMano;
+
+    private boolean tableroVisible;
 
     final Border LABEL_BORDER = BorderFactory.createLineBorder(Color.BLUE, 2);
     //final Border LABEL_BORDER = BorderFactory.createRaisedBevelBorder();
@@ -82,13 +86,13 @@ public class VistaGrafica implements IVista {
 
     private JList<Mensaje> chat;
 
+    private JPanel jugadoresResultados;
+
     public VistaGrafica(ControladorJuego controladorJuego, IJugador jugadorCliente) {
         this.jugadorCliente = jugadorCliente;
 
         this.controladorJuego = controladorJuego;
         this.controladorJuego.setVista(this);
-
-        this.jugadores = new ArrayList<>();
 
         EventQueue.invokeLater(() -> {
             JFrame frame = new JFrame();
@@ -108,23 +112,59 @@ public class VistaGrafica implements IVista {
             frame.setTitle("Saboteur - " + this.jugadorCliente.getId());
 
             Container panelPrincipal = frame.getContentPane();
-            panelPrincipal.setLayout(new CardLayout());
+            panelPrincipal.setLayout(new GridLayout(2, 1));
 
-            panelPrincipal.add(this.crearPanelDeJuego(), "Panel de juego");
-            panelPrincipal.add(this.crearPanelDeResultados(), "Panel de resultados");
+            panelDePaneles = new JPanel();
+            panelDePaneles.setLayout(new CardLayout());
+
+            this.paneles = (CardLayout) panelDePaneles.getLayout();
+
+            panelDePaneles.add(this.crearPanelDeJuego(), PANEL_JUEGO);
+            panelDePaneles.add(this.crearPanelDeResultados(), PANEL_RESULTADOS);
+
+            panelPrincipal.add(panelDePaneles);
+
+            tableroVisible = true;
+
+            JButton switchPanelButton = new JButton("Switch panel");
+            switchPanelButton.addActionListener(evento -> {
+                if (tableroVisible) {
+                    mostrarResultados();
+                } else {
+                    mostrarTablero();
+                }
+                tableroVisible = !tableroVisible;
+            });
+
+            panelPrincipal.add(switchPanelButton);
 
             frame.setVisible(true);
         });
     }
 
     private Container crearPanelDeResultados() {
-        // TODO Auto-generated method stub
-        return new JPanel();
+        JPanel panelDeResultados = new JPanel();
+        panelDeResultados.setLayout(new BorderLayout());
+        jugadoresResultados = new JPanel();
+        jugadoresResultados.setLayout(new GridLayout(10, 1));
+
+        panelDeResultados.add(jugadoresResultados, BorderLayout.CENTER);
+
+        JLabel titulo = new JLabel("FIN DE LA RONDA");
+        panelDeResultados.add(titulo, BorderLayout.NORTH);
+        JButton botonContinuar = new JButton("Continuar");
+        panelDeResultados.add(botonContinuar, BorderLayout.SOUTH);
+        return panelDeResultados;
     }
 
     private Container crearPanelDeJuego() {
         chat = new JList<>();
         chat.setCellRenderer(new DefaultListCellRenderer() {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 4827397224790241362L;
 
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -141,6 +181,11 @@ public class VistaGrafica implements IVista {
 
         chat.setFont(FONT);
         chat.setSelectionModel(new DefaultListSelectionModel() {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -1938719531367585786L;
 
             @Override
             public void setAnchorSelectionIndex(int anchorIndex) {
@@ -206,8 +251,13 @@ public class VistaGrafica implements IVista {
 
         botonListo = new JButton("Listo");
         botonListo.addActionListener(evento -> {
-            botonListo.setEnabled(false);
-            controladorJuego.marcarListo(jugadorCliente);
+            int cantidadJugadores = controladorJuego.obtenerJugadores().size();
+            if (cantidadJugadores >= 3 && cantidadJugadores <= 10) {
+                botonListo.setEnabled(false);
+                controladorJuego.marcarListo(jugadorCliente);
+            } else {
+                System.err.println("Debe haber entre 3 y 10 jugadores inclusive para poder jugar");
+            }
         });
 
         Container panelDeJuego = new JPanel();
@@ -225,6 +275,11 @@ public class VistaGrafica implements IVista {
 
         listaDeJugadores = new JList<>();
         listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -216238111892207439L;
 
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -285,7 +340,7 @@ public class VistaGrafica implements IVista {
 
         panelDeJuego.add(panelJugadores, BorderLayout.WEST);
 
-        this.actualizarJugadores();
+        this.actualizarJugadoresTablero();
 
         if (this.jugadorCliente.esMiTurno()) {
             panelTablero.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -316,6 +371,7 @@ public class VistaGrafica implements IVista {
         return panelDeJuego;
     }
 
+    /*
     private void removerCartaSeleccionadaDeLaMano() {
         Component componentToRemove = null;
         for (Component component : panelMano.getComponents()) {
@@ -333,6 +389,7 @@ public class VistaGrafica implements IVista {
         }
         cartaSeleccionada = null;
     }
+    */
 
     @Override
     public void iniciar() {
@@ -340,8 +397,13 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void actualizarJugadores(List<IJugador> jugadores) {
+    public void actualizarVistaJugadores(List<IJugador> jugadores) {
         this.listaDeJugadores.setModel(new AbstractListModel<IJugador>() {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 8994216166367505605L;
 
             @Override
             public int getSize() {
@@ -357,17 +419,15 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void actualizarJugadores() {
+    public void actualizarJugadoresTablero() {
         List<IJugador> jugadores = this.controladorJuego.obtenerJugadores();
-        this.jugadores.clear();
         for (IJugador jugador : jugadores) {
             if (jugador.equals(this.jugadorCliente)) {
                 // Actualizar la instancia con el último estado proveniente del servidor
                 this.jugadorCliente = jugador;
             }
-            this.jugadores.add(jugador);
         }
-        this.actualizarJugadores(this.jugadores);
+        this.actualizarVistaJugadores(jugadores);
     }
 
     private void actualizarTurno() {
@@ -382,6 +442,11 @@ public class VistaGrafica implements IVista {
     public void actualizarMensajes() {
         List<Mensaje> mensajes = this.controladorJuego.obtenerMensajes();
         this.chat.setModel(new AbstractListModel<Mensaje>() {
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 4015518047830903054L;
 
             @Override
             public int getSize() {
@@ -400,13 +465,13 @@ public class VistaGrafica implements IVista {
         botonListo.setEnabled(false);
         panelMano.remove(botonListo);
 
-        this.actualizar();
+        this.actualizarPanelTablero();
     }
 
+    // TODO EXE - No hay motivo para que esto esté en la interfaz. Hacerlo privado
+    @Override
     public void actualizarMano() {
         panelMano.removeAll();
-
-        actualizarJugadores();
 
         for (CartaDeJuego carta : this.jugadorCliente.getMano()) {
             CartaMano cartaLabel = new CartaMano(carta, controladorJuego);
@@ -429,7 +494,6 @@ public class VistaGrafica implements IVista {
 
     @Override
     public void actualizarTablero(List<CartaDeTunel> tablero) {
-        this.tablero = tablero;
         panelTablero.removeAll();
         for (int y = -1; y < 6; y++) {
             for (int x = -1; x < 10; x++) {
@@ -458,17 +522,41 @@ public class VistaGrafica implements IVista {
     }
 
     @Override
-    public void actualizar() {
-        this.actualizarJugadores();
+    public void actualizarPanelTablero() {
+        this.actualizarJugadoresTablero();
         this.actualizarTurno();
         this.actualizarTablero();
         this.actualizarMano();
+        // TODO EXE - Mover el componente de mensajes hacia afuera del panel del tablero
+        // para que se pueda usar también en la pantalla de resultados
         this.actualizarMensajes();
+    }
+
+    private void actualizarPanelResultados() {
+        List<IJugador> jugadores = this.controladorJuego.obtenerJugadores();
+        jugadores
+            .stream()
+            .map(jugador -> new StringBuilder()
+                    .append(jugador.getId())
+                    .append(" ")
+                    .append(jugador.getRol() == null ? "ERROR" : jugador.getRol().name())
+                    .append(" -> ")
+                    .append(jugador.calcularPuntaje())
+                    .toString())
+            .map(JLabel::new)
+            .forEach(this.jugadoresResultados::add);
+    }
+
+    @Override
+    public void mostrarTablero() {
+        this.paneles.show(this.panelDePaneles, PANEL_JUEGO);
+        this.actualizarPanelTablero();
     }
 
     @Override
     public void mostrarResultados() {
-        
+        this.paneles.show(this.panelDePaneles, PANEL_RESULTADOS);
+        this.actualizarPanelResultados();
     }
 
     public String obtenerRepresentacionGraficaCarta(CartaDeJuego carta, JLabel label) {
@@ -619,7 +707,6 @@ public class VistaGrafica implements IVista {
         }
     
         public void setCarta(CartaDeJuego carta) {
-            // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
 
             this.setText(obtenerRepresentacionGraficaCarta(carta, this));
@@ -691,7 +778,6 @@ public class VistaGrafica implements IVista {
         }
     
         public void setCarta(CartaDeJuego carta) {
-            // TODO EXE - Generar texto que represente las entradas y el centro de la carta
             this.carta = carta;
             this.setText(obtenerRepresentacionGraficaCarta(carta, this));
         }

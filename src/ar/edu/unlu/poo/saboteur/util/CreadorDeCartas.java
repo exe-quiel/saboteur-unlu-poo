@@ -1,4 +1,4 @@
-package ar.edu.unlu.poo.saboteur;
+package ar.edu.unlu.poo.saboteur.util;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
@@ -17,7 +17,6 @@ import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
-import ar.edu.unlu.poo.saboteur.util.Serializador;
 
 public class CreadorDeCartas {
 

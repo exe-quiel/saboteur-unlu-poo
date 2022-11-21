@@ -34,11 +34,11 @@ public class ControladorJuego implements IControladorRemoto {
                 // la vista aún no está seteada y tira excepción cuando recibe
                 // el evento de su propio ingreso al juego
                 if (vista != null) {
-                    vista.actualizarJugadores(evento.getJugadores());
+                    vista.actualizarVistaJugadores(evento.getJugadores());
                 }
                 break;
             case JUGADOR_SALE:
-                vista.actualizarJugadores(evento.getJugadores());
+                vista.actualizarVistaJugadores(evento.getJugadores());
                 break;
             case NUEVO_MENSAJE:
                 if (vista != null) {
@@ -47,13 +47,13 @@ public class ControladorJuego implements IControladorRemoto {
                 //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIO_TURNO:
-                vista.actualizar();
+                vista.actualizarPanelTablero();
                 break;
             case INICIA_JUEGO:
                 vista.iniciarJuego(evento);
                 break;
             case FIN_RONDA:
-                vista.actualizar();
+                vista.mostrarResultados();
                 break;
             case FIN_JUEGO:
                 vista.mostrarResultados();

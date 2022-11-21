@@ -587,6 +587,8 @@ public class Juego extends ObservableRemoto implements IJuego {
                 }
             }
             this.estadoPartida = this.estadoPartida.getSiguienteEstado();
+            // Conviene reiniciar los puntajes, manos, pila de descartes, etc. en el método comenzarJuego.
+            // La idea es que el estado de la ronda o partida se mantenga hasta que los jugadores terminen de mirar los resultados
             if (EstadoPartida.RESULTADOS == estadoPartida) {
                 this.notificarObservadores(new Evento(TipoEvento.FIN_JUEGO));
             } else {

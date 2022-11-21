@@ -12,9 +12,9 @@ public interface IVista {
 
     public void actualizarMensajes();
 
-    public void actualizarJugadores(List<IJugador> jugadores);
+    public void actualizarVistaJugadores(List<IJugador> jugadores);
 
-    public void actualizarJugadores();
+    public void actualizarJugadoresTablero();
 
     public void actualizarTablero(List<CartaDeTunel> tablero);
 
@@ -26,9 +26,12 @@ public interface IVista {
 
     public void setJugador(IJugador obtenerJugador);
 
-    public void actualizar();
+    public void actualizarPanelTablero();
+
+    public void mostrarTablero();
 
     public void mostrarResultados();
 
     public void actualizarMano();
+
 }
