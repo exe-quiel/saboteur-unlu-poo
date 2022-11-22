@@ -21,7 +21,7 @@ public class ControladorJuego implements IControladorRemoto {
     private IVista vista;
 
     public ControladorJuego() {
-
+        super();
     }
 
     @Override
@@ -44,7 +44,6 @@ public class ControladorJuego implements IControladorRemoto {
                 if (vista != null) {
                     vista.actualizarMensajes();
                 }
-                //vista.cambiarTurno(evento.getJugadorOrigen());
                 break;
             case CAMBIA_TURNO:
                 vista.actualizarPanelTablero();
@@ -91,9 +90,12 @@ public class ControladorJuego implements IControladorRemoto {
     }
 
     /**
+     * 
      * Permite jugar una carta de accion en el tablero (mapa o derrumbe).
      * 
-     * @param carta carta a jugar
+     * @param carta carta de acción a jugar
+     *
+     * @return true si no hubo errores, de lo contrario, false
      */
     public boolean jugarCarta(CartaDeAccion carta) {
         try {
@@ -164,19 +166,9 @@ public class ControladorJuego implements IControladorRemoto {
         }
     }
 
-    public void setVista(IVista vista) {
-        this.vista = vista;
-    }
-
-    @Override
-    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
-        this.juego = (IJuego) arg0;
-    }
-
     public void descartar(CartaDeJuego carta) {
         try {
             this.juego.descartar(carta);
-            //vista.actualizarMano();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -185,7 +177,6 @@ public class ControladorJuego implements IControladorRemoto {
     public CartaDeJuego tomarCarta() {
         try {
             CartaDeJuego carta = this.juego.tomarCarta();
-            //vista.actualizarMano();
             return carta;
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -199,5 +190,14 @@ public class ControladorJuego implements IControladorRemoto {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setVista(IVista vista) {
+        this.vista = vista;
+    }
+
+    @Override
+    public <T extends IObservableRemoto> void setModeloRemoto(T arg0) throws RemoteException {
+        this.juego = (IJuego) arg0;
     }
 }

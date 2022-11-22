@@ -18,7 +18,7 @@ import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 
-public class CreadorDeCartas {
+public class GeneradorDeCartas {
 
     public static void main(String[] args) {
         List<CartaDeJuego> cartasDeJuego = new ArrayList<>();

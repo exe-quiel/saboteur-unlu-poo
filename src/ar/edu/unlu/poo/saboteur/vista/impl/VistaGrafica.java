@@ -10,22 +10,17 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -42,7 +37,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.MouseInputListener;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
@@ -61,7 +55,8 @@ public class VistaGrafica implements IVista {
     // private GeneradorDeImagenes generadorDeImagenes =
     // GeneradorDeImagenes.getInstance();
 
-    final static Font FONT = new Font(null, Font.PLAIN, 14);
+    final static Font PLAIN_FONT = new Font(null, Font.PLAIN, 14);
+    final static Font BOLD_FONT = new Font(null, Font.BOLD, 14);
 
     private Container panelDePaneles;
     private CardLayout paneles;
@@ -149,7 +144,7 @@ public class VistaGrafica implements IVista {
         panelDeResultados.setLayout(new GridBagLayout());
         jugadoresResultados = new JPanel();
         jugadoresResultados.setLayout(new GridLayout(10, 1));
-        jugadoresResultados.setFont(FONT);
+        jugadoresResultados.setFont(PLAIN_FONT);
 
         panelDeResultados.add(jugadoresResultados);
 
@@ -187,7 +182,7 @@ public class VistaGrafica implements IVista {
             }
         });
 
-        chat.setFont(FONT);
+        chat.setFont(PLAIN_FONT);
         chat.setSelectionModel(new DefaultListSelectionModel() {
 
             /**
@@ -221,12 +216,12 @@ public class VistaGrafica implements IVista {
         scrollablePane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         JTextField textoDelUsuario = new JTextField();
-        textoDelUsuario.setFont(FONT);
+        textoDelUsuario.setFont(PLAIN_FONT);
         textoDelUsuario.setSize(500, 20);
         textoDelUsuario.setText("Escribir mensaje");
 
         botonEnviar = new JButton("Enviar");
-        botonEnviar.setFont(FONT);
+        botonEnviar.setFont(PLAIN_FONT);
 
         botonEnviar.addActionListener(event -> {
             String text = textoDelUsuario.getText();
@@ -282,7 +277,7 @@ public class VistaGrafica implements IVista {
         panelJugadores.setLayout(new FlowLayout());
         // panelJugadores.setPreferredSize(new Dimension(200, 500));
         TitledBorder border = new TitledBorder("Jugadores");
-        border.setTitleFont(FONT);
+        border.setTitleFont(PLAIN_FONT);
         ((JPanel) panelJugadores).setBorder(border);
 
         listaDeJugadores = new JList<>();
@@ -299,7 +294,11 @@ public class VistaGrafica implements IVista {
                 if (value instanceof IJugador) {
                     IJugador jugador = (IJugador) value;
 
-                    StringBuilder sb = new StringBuilder("<html>").append(jugador.getNombre());
+                    StringBuilder sb = new StringBuilder("<html>");
+                    if (jugador.esMiTurno()) {
+                        sb.append(">>");
+                    }
+                    sb.append(jugador.getNombre());
 
                     if (jugador.equals(jugadorCliente)) {
                         if (jugador.getRol() != null) {
@@ -307,12 +306,14 @@ public class VistaGrafica implements IVista {
                             sb.append(jugador.getRol());
                             sb.append(")");
                         }
-                        setForeground(Color.RED);
+                        setFont(BOLD_FONT);
+                    } else {
+                        setFont(PLAIN_FONT);
                     }
 
                     sb.append("<br>")
                         .append(jugador.getHerramientasRotas().stream()
-                            .map(herramientaRota -> "  -".concat(herramientaRota.getTipos().get(0).name()))
+                            .map(herramientaRota -> "&#8594;".concat(herramientaRota.getTipos().get(0).toString()))
                             .collect(Collectors.joining("<br>")));
                     sb.append("</html>");
                     setText(sb.toString());
@@ -321,7 +322,6 @@ public class VistaGrafica implements IVista {
             }
         });
         listaDeJugadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        listaDeJugadores.setFont(FONT);
 
         listaDeJugadores.addListSelectionListener(evento -> {
             int indiceDelJugador = evento.getFirstIndex();
@@ -402,16 +402,6 @@ public class VistaGrafica implements IVista {
 
         return panelDeJuego;
     }
-
-    /*
-     * private void removerCartaSeleccionadaDeLaMano() { Component componentToRemove
-     * = null; for (Component component : panelMano.getComponents()) { if (component
-     * instanceof CartaMano) { CartaDeJuego carta = ((CartaMano)
-     * component).getCarta(); if (carta == cartaSeleccionada) { componentToRemove =
-     * component; } } } if (componentToRemove != null) {
-     * panelMano.remove(componentToRemove); panelMano.revalidate();
-     * panelMano.repaint(); } cartaSeleccionada = null; }
-     */
 
     @Override
     public void iniciar() {
@@ -680,7 +670,7 @@ public class VistaGrafica implements IVista {
 
         public CartaTablero(CartaDeJuego carta, Integer x, Integer y, ControladorJuego controlador) {
             super();
-            this.setFont(FONT);
+            this.setFont(PLAIN_FONT);
             this.x = x;
             this.y = y;
             this.setCarta(carta);
@@ -773,7 +763,7 @@ public class VistaGrafica implements IVista {
 
         public CartaMano(CartaDeJuego carta, ControladorJuego controlador) {
             super();
-            this.setFont(FONT);
+            this.setFont(PLAIN_FONT);
             this.setCarta(carta);
 
             addMouseListener(new MouseAdapter() {
@@ -814,81 +804,6 @@ public class VistaGrafica implements IVista {
         public void setCarta(CartaDeJuego carta) {
             this.carta = carta;
             this.setText(obtenerRepresentacionGraficaCarta(carta, this));
-        }
-    }
-
-    public class Tablero extends JComponent implements MouseInputListener {
-
-        // https://stackoverflow.com/questions/776180/how-to-make-canvas-with-swing
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -9000222691684122499L;
-
-        private Image img;
-        private String path = "C:/Users/Administrator/Downloads/Telegram Desktop/SABOTEUR/cartas de accion${n}.jpg";
-        private byte index = 1;
-
-        public Tablero() {
-            super();
-            this.addMouseListener(this);
-            try {
-                img = ImageIO.read(new File(path.replace("${n}", "1")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        protected void paintComponent(Graphics graphics) {
-            super.paintComponent(graphics);
-            graphics.drawImage(img, 0, 0, null);
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            System.out.println("hizo click");
-            index++;
-            if (index > 3) {
-                index = 1;
-            }
-            try {
-                img = ImageIO.read(new File(path.replace("${n}", String.valueOf(index))));
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            this.repaint();
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-
         }
     }
 }

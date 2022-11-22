@@ -35,8 +35,8 @@ public class SaboteurClienteGUI {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | UnsupportedLookAndFeelException e1) {
-            e1.printStackTrace();
+                | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
         }
 
         String nombreUsuario = JOptionPane.showInputDialog("Ingresar un nombre de usuario");
