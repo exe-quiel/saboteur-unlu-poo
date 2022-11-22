@@ -4,7 +4,13 @@ import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 
-public interface IJugador extends IJugadorBase {
+public interface IJugador {
+
+    public int getId();
+
+    public String getNombre();
+
+    public List<CartaDeAccion> getHerramientasRotas();
 
     public List<CartaDeJuego> getMano();
 

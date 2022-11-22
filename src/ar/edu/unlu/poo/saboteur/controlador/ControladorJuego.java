@@ -34,27 +34,27 @@ public class ControladorJuego implements IControladorRemoto {
                 // la vista aún no está seteada y tira excepción cuando recibe
                 // el evento de su propio ingreso al juego
                 if (vista != null) {
-                    vista.actualizarJugadoresTablero();
+                    vista.actualizarJugadores();
                 }
                 break;
             case SALE_JUGADOR:
-                vista.actualizarJugadoresTablero();
+                vista.actualizarJugadores();
                 break;
             case LLEGA_MENSAJE:
                 if (vista != null) {
-                    vista.actualizarMensajes();
+                    vista.actualizarChat();
                 }
                 break;
             case CAMBIA_TURNO:
-                vista.actualizarPanelTablero();
+                vista.actualizarJuego();
                 break;
             case INICIA_RONDA:
                 vista.iniciarRonda();
                 break;
             case FINALIZA_RONDA:
-                vista.mostrarResultados(evento.getTipoEvento());
+                vista.actualizarResultados(evento.getTipoEvento());
             case FINALIZA_JUEGO:
-                vista.mostrarResultados(evento.getTipoEvento());
+                vista.actualizarResultados(evento.getTipoEvento());
                 break;
             default:
                 break;

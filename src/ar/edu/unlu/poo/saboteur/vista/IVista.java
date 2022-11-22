@@ -1,32 +1,34 @@
 package ar.edu.unlu.poo.saboteur.vista;
 
-import java.util.List;
-
+import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
+import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
-import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 
 public interface IVista {
 
     public void iniciar();
 
-    public void actualizarMensajes();
+    public IJugador getJugador();
 
-    public void actualizarJugadoresTablero();
-
-    public void actualizarTablero(List<CartaDeTunel> tablero);
-
-    public void actualizarTablero();
+    public void setJugador(IJugador jugador);
 
     public void iniciarRonda();
 
-    public IJugador getJugador();
+    public void actualizarJuego();
 
-    public void setJugador(IJugador obtenerJugador);
+    public void actualizarJugadores();
 
-    public void actualizarPanelTablero();
+    public void actualizarChat();
 
-    public void mostrarTablero();
+    public void actualizarResultados(TipoEvento tipoEvento);
 
-    public void mostrarResultados(TipoEvento tipoEvento);
+    public void setCartaSeleccionada(CartaDeJuego cartaSeleccionada);
+
+    public ControladorJuego getControlador();
+
+    public CartaDeJuego getCartaSeleccionada();
+
+
+
 }
