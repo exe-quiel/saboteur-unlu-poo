@@ -385,7 +385,7 @@ public class Juego extends ObservableRemoto implements IJuego {
             carta.setPosicion(posicion[0], posicion[1]);
         });
         // TODO EXE - Quitar esto en la versión final, es solo para pruebas
-        cartaDeInicio.setPosicion(this.cartaDeDestinoOro.getX() - 3, this.cartaDeDestinoOro.getY());
+        //cartaDeInicio.setPosicion(this.cartaDeDestinoOro.getX() - 3, this.cartaDeDestinoOro.getY());
     }
 
     private void repartirCartas() {

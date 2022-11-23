@@ -45,7 +45,11 @@ public class SaboteurClienteGUI {
 
         setUIFont(new FontUIResource(GUIConstants.PLAIN_FONT));
 
-        String nombreUsuario = JOptionPane.showInputDialog("Ingresar un nombre de usuario");
+        String nombreJugador = null;
+
+        while (nombreJugador == null || nombreJugador.length() == 0) {
+            nombreJugador = JOptionPane.showInputDialog("Ingresar un nombre de usuario");
+        }
 
         final int CLIENT_PORT = obtenerPuertoClienteYActualizarArchivo();
         Cliente cliente = new Cliente(DEFAULT_CLIENT_HOSTNAME, CLIENT_PORT, DEFAULT_SERVER_HOSTNAME,
@@ -55,12 +59,12 @@ public class SaboteurClienteGUI {
         } catch (RemoteException | RMIMVCException e) {
             e.printStackTrace();
         }
-        IJugador jugador = controladorJuego.crearJugador(nombreUsuario);
+        IJugador jugador = controladorJuego.crearJugador(nombreJugador);
         if (jugador == null) {
             System.out.println("Partida ya iniciada");
             System.exit(0);
         }
-        String nombreJugador = jugador.getNombre();
+
         System.out.println("Iniciando cliente [" + nombreJugador + "] en puerto [" + CLIENT_PORT + "]");
         vista = new VistaGrafica(controladorJuego, jugador);
         System.out.println("Tu nombre: " + nombreJugador);

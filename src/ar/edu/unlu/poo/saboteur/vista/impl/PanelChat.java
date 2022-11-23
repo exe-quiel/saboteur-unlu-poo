@@ -2,7 +2,6 @@ package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.AdjustmentEvent;
@@ -120,7 +119,7 @@ public class PanelChat extends JPanel {
         panelInferiorChat.add(textoDelUsuario);
         panelInferiorChat.add(botonEnviar);
         add(panelInferiorChat);
-        setPreferredSize(new Dimension(200, 0));
+        //setPreferredSize(new Dimension(200, 0));
     }
 
     public void actualizar() {

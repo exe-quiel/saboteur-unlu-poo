@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.List;
@@ -47,7 +46,6 @@ public class PanelPartida extends JPanel {
 
     private Container panelTablero;
 
-
     public PanelPartida(IVista vista) {
         this.controlador = vista.getControlador();
         this.jugador = vista.getJugador();
@@ -78,88 +76,53 @@ public class PanelPartida extends JPanel {
         ((JPanel) panelJugadores).setBorder(border);
 
         listaDeJugadores = new JList<>();
-        listaDeJugadores.setCellRenderer(new DefaultListCellRenderer() {
-
-            /**
-             * 
-             */
-            private static final long serialVersionUID = -216238111892207439L;
-
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-                    boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof IJugador) {
-                    IJugador jugador = (IJugador) value;
-
-                    StringBuilder sb = new StringBuilder("<html>");
-                    if (jugador.esMiTurno()) {
-                        sb.append(">>");
-                    }
-                    sb.append(jugador.getNombre());
-
-                    if (jugador.equals(vista.getJugador())) {
-                        if (jugador.getRol() != null) {
-                            sb.append(" (");
-                            sb.append(jugador.getRol());
-                            sb.append(")");
-                        }
-                        setFont(GUIConstants.BOLD_FONT);
-                    }
-
-                    sb.append("<br>")
-                        .append(jugador.getHerramientasRotas().stream()
-                            .map(herramientaRota -> "&#8594;".concat(herramientaRota.getTipos().get(0).toString()))
-                            .collect(Collectors.joining("<br>")));
-                    sb.append("</html>");
-                    setText(sb.toString());
-                }
-                return this;
-            }
-        });
+        listaDeJugadores.setCellRenderer(new JugadoresCellRenderer());
         listaDeJugadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         listaDeJugadores.addListSelectionListener(evento -> {
             int indiceDelJugador = evento.getFirstIndex();
             IJugador jugador = listaDeJugadores.getModel().getElementAt(indiceDelJugador);
 
-            if (vista.getJugador().esMiTurno()) {
-                CartaDeJuego cartaSeleccionada = vista.getCartaSeleccionada();
-                if (vista.getCartaSeleccionada() != null) {
-                    boolean resultadoAccion = false;
-                    if (cartaSeleccionada instanceof CartaDeAccion) {
-                        CartaDeAccion cartaDeAccion = (CartaDeAccion) cartaSeleccionada;
-                        boolean dispararAccion = true;
-                        if (cartaDeAccion.esCartaDeHerramientaRota() && jugador.equals(vista.getJugador())) {
-                            dispararAccion = false;
-                        }
-                        if (ultimoClicSobreJugador == -1) {
-                            ultimoClicSobreJugador = System.currentTimeMillis();
-                        } else {
-                            long ahora = System.currentTimeMillis();
-                            if ((ahora - ultimoClicSobreJugador < 1000)) {
-                                ultimoClicSobreJugador = ahora;
-                                dispararAccion = false;
-                            }
-                        }
-                        if (dispararAccion) {
-                            System.out.println("Hiciste clic en el usuario " + jugador.getNombre());
-                            resultadoAccion = vista.getControlador().jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
-                            if (resultadoAccion) {
-                                // removerCartaSeleccionadaDeLaMano();
-                                vista.getControlador().avanzar();
-                            } else {
-                                //JOptionPane.showConfirmDialog(null, "Error");
-                                System.err.println("Ocurrió un error");
-                            }
-                        }
-                    } else {
-                        System.err.println("No seleccionaste una carta de acción");
-                    }
-                } else {
-                    System.err.println("No seleccionaste ninguna carta");
-                }
-            } else {
+            if (!vista.getJugador().esMiTurno()) {
                 System.err.println("No es tu turno todavía");
+            }
+
+            CartaDeJuego cartaSeleccionada = vista.getCartaSeleccionada();
+            if (vista.getCartaSeleccionada() == null) {
+                System.err.println("No seleccionaste ninguna carta");
+            }
+
+            boolean resultadoAccion = false;
+            if (!(cartaSeleccionada instanceof CartaDeAccion)) {
+                System.err.println("No seleccionaste una carta de acción");
+            }
+
+            CartaDeAccion cartaDeAccion = (CartaDeAccion) cartaSeleccionada;
+            boolean dispararAccion = true;
+            if (cartaDeAccion.esCartaDeHerramientaRota() && jugador.equals(vista.getJugador())) {
+                dispararAccion = false;
+            }
+
+            // A veces se dispara el evento de clic varias veces seguidas.
+            // Con esto se evita que se llame más de una vez por segundo.
+            if (ultimoClicSobreJugador == -1) {
+                ultimoClicSobreJugador = System.currentTimeMillis();
+            } else {
+                long ahora = System.currentTimeMillis();
+                if ((ahora - ultimoClicSobreJugador < 1000)) {
+                    ultimoClicSobreJugador = ahora;
+                    dispararAccion = false;
+                }
+            }
+
+            if (dispararAccion) {
+                System.out.println("Hiciste clic en el usuario " + jugador.getNombre());
+                resultadoAccion = vista.getControlador().jugarCarta(jugador, (CartaDeAccion) cartaSeleccionada);
+                if (resultadoAccion) {
+                    vista.getControlador().avanzar();
+                } else {
+                    System.err.println("Ocurrió un error");
+                }
             }
             listaDeJugadores.clearSelection();
         });
@@ -178,8 +141,9 @@ public class PanelPartida extends JPanel {
 
         panelMano = new JPanel();
         panelMano.setLayout(new GridLayout(1, 10));
+        //panelMano.setLayout(new FlowLayout());
         panelMano.add(botonListo);
-        panelMano.setPreferredSize(new Dimension(0, 200));
+        // panelMano.setPreferredSize(new Dimension(0, 200));
         add(panelMano, BorderLayout.SOUTH);
     }
 
@@ -199,23 +163,7 @@ public class PanelPartida extends JPanel {
                 this.vista.setJugador(jugador);
             }
         }
-        this.listaDeJugadores.setModel(new AbstractListModel<IJugador>() {
-    
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 8994216166367505605L;
-    
-            @Override
-            public int getSize() {
-                return jugadores.size();
-            }
-    
-            @Override
-            public IJugador getElementAt(int index) {
-                return jugadores.get(index);
-            }
-        });
+        this.listaDeJugadores.setModel(new ModeloJugadores(jugadores));
     }
 
     private void actualizarTurno() {
@@ -240,7 +188,7 @@ public class PanelPartida extends JPanel {
                 }
                 CartaTablero label = new CartaTablero(cartaEnPosicion, x, y, this.vista);
                 label.setHorizontalAlignment(JLabel.CENTER);
-                label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
+                // label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
                 panelTablero.add(label);
             }
         }
@@ -265,5 +213,69 @@ public class PanelPartida extends JPanel {
         }
         panelMano.revalidate();
         panelMano.repaint();
+    }
+
+    public class ModeloJugadores extends AbstractListModel<IJugador> {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 8994216166367505605L;
+
+        private List<IJugador> jugadores;
+
+        public ModeloJugadores(List<IJugador> jugadores) {
+            this.jugadores = jugadores;
+        }
+
+        @Override
+        public int getSize() {
+            return jugadores.size();
+        }
+
+        @Override
+        public IJugador getElementAt(int index) {
+            return jugadores.get(index);
+        }
+    }
+
+    public class JugadoresCellRenderer extends DefaultListCellRenderer {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -216238111892207439L;
+
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof IJugador) {
+                IJugador jugador = (IJugador) value;
+
+                StringBuilder sb = new StringBuilder("<html>");
+                if (jugador.esMiTurno()) {
+                    sb.append(">>");
+                }
+                sb.append(jugador.getNombre());
+
+                if (jugador.equals(vista.getJugador())) {
+                    if (jugador.getRol() != null) {
+                        sb.append(" (");
+                        sb.append(jugador.getRol());
+                        sb.append(")");
+                    }
+                    setFont(GUIConstants.BOLD_FONT);
+                }
+
+                sb.append("<br>")
+                        .append(jugador.getHerramientasRotas().stream()
+                                .map(herramientaRota -> "&#8594;"
+                                        .concat(herramientaRota.getTipos().get(0).toString()))
+                                .collect(Collectors.joining("<br>")));
+                sb.append("</html>");
+                setText(sb.toString());
+            }
+            return this;
+        }
     }
 }

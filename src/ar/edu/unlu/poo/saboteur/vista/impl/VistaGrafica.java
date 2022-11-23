@@ -1,11 +1,9 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.EventQueue;
-import java.awt.GridLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -48,7 +46,8 @@ public class VistaGrafica implements IVista {
             frame.setSize(1280, 720);
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             //frame.setUndecorated(true);
-            //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            /*
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
 
@@ -58,13 +57,29 @@ public class VistaGrafica implements IVista {
                     System.exit(0);
                 }
             });
+            */
             frame.setTitle("Saboteur - " + jugadorCliente.getNombre());
 
             Container panelPrincipal = frame.getContentPane();
-            panelPrincipal.setLayout(new GridLayout(1, 2));
+            //panelPrincipal.setLayout(new GridLayout(1, 2));
+            //panelPrincipal.setLayout(new GridBagLayout());
+            panelPrincipal.setLayout(new BorderLayout());
+            //GridBagConstraints panelPrincipalconstraints = new GridBagConstraints();
 
             secciones = new JPanel();
             secciones.setLayout(new CardLayout());
+
+            /*
+            panelPrincipalconstraints.fill = GridBagConstraints.BOTH;
+            panelPrincipalconstraints.gridx = 0;
+            panelPrincipalconstraints.gridy = 0;
+            panelPrincipalconstraints.gridwidth = 1;
+            panelPrincipalconstraints.gridheight = 1;
+            panelPrincipalconstraints.weightx = 0.9;
+            panelPrincipalconstraints.weighty = 1.0;
+            */
+
+            panelPrincipal.add(secciones, BorderLayout.CENTER /*panelPrincipalconstraints*/);
 
             paneles = (CardLayout) secciones.getLayout();
 
@@ -73,10 +88,21 @@ public class VistaGrafica implements IVista {
 
             panelResultados = new PanelResultados(this);
             secciones.add(panelResultados, PANEL_RESULTADOS);
-            panelPrincipal.add(secciones);
 
             panelChat = new PanelChat(this);
-            panelPrincipal.add(panelChat);
+
+            /*
+            GridBagConstraints panelChatConstraints = new GridBagConstraints();
+            panelChatConstraints.fill = GridBagConstraints.BOTH;
+            panelChatConstraints.gridx = 1;
+            panelChatConstraints.gridy = 0;
+            panelChatConstraints.gridwidth = 1;
+            panelChatConstraints.gridheight = 1;
+            panelChatConstraints.weightx = 0.1;
+            panelChatConstraints.weighty = 1.0;
+            */
+
+            panelPrincipal.add(panelChat, BorderLayout.EAST /*panelChatConstraints*/);
 
             frame.setVisible(true);
 
