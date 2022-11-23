@@ -46,9 +46,9 @@ public class VistaGrafica implements IVista {
 
             JFrame frame = new JFrame();
             frame.setSize(1280, 720);
-            // frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            // frame.setUndecorated(true);
-            // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            //frame.setUndecorated(true);
+            //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
 

@@ -68,7 +68,6 @@ public class PanelChat extends JPanel {
             }
         });
 
-        chat.setFont(GUIConstants.PLAIN_FONT);
         chat.setSelectionModel(new ModeloNoSeleccionable());
 
         scrollablePane = new JScrollPane(chat);

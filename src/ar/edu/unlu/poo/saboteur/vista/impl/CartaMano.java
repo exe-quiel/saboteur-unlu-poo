@@ -30,7 +30,6 @@ public class CartaMano extends JLabel {
 
     public CartaMano(CartaDeJuego carta, IVista vista) {
         super();
-        this.setFont(GUIConstants.PLAIN_FONT);
         this.setCarta(carta);
 
         IJugador jugadorCliente = vista.getJugador();

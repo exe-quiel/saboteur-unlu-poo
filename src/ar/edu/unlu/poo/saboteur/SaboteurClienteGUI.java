@@ -1,18 +1,22 @@
 package ar.edu.unlu.poo.saboteur;
 
+import java.awt.Font;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.rmi.RemoteException;
+import java.util.Enumeration;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.FontUIResource;
 
 import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.util.GUIConstants;
 import ar.edu.unlu.poo.saboteur.vista.IVista;
 import ar.edu.unlu.poo.saboteur.vista.impl.VistaGrafica;
 import ar.edu.unlu.rmimvc.RMIMVCException;
@@ -39,6 +43,8 @@ public class SaboteurClienteGUI {
             e.printStackTrace();
         }
 
+        setUIFont(new FontUIResource(GUIConstants.PLAIN_FONT));
+
         String nombreUsuario = JOptionPane.showInputDialog("Ingresar un nombre de usuario");
 
         final int CLIENT_PORT = obtenerPuertoClienteYActualizarArchivo();
@@ -59,6 +65,19 @@ public class SaboteurClienteGUI {
         vista = new VistaGrafica(controladorJuego, jugador);
         System.out.println("Tu nombre: " + nombreJugador);
         vista.iniciar();
+    }
+
+    private static void setUIFont(FontUIResource fontUIResource) {
+        Enumeration<?> keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value instanceof FontUIResource) {
+                FontUIResource originalFont = (FontUIResource) value;
+                Font font = new Font(fontUIResource.getFontName(), originalFont.getStyle(), fontUIResource.getSize());
+                UIManager.put(key, new FontUIResource(font));
+            }
+        }
     }
 
     /**

@@ -1,7 +1,6 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.Color;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.List;
 
@@ -10,7 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import ar.edu.unlu.poo.saboteur.controlador.ControladorJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoEvento;
 import ar.edu.unlu.poo.saboteur.util.GUIConstants;
@@ -23,8 +21,6 @@ public class PanelResultados extends JPanel {
      */
     private static final long serialVersionUID = 8600523938097587547L;
 
-    private ControladorJuego controladorJuego;
-
     private JPanel jugadoresResultados;
     private JButton botonContinuar;
 
@@ -33,32 +29,33 @@ public class PanelResultados extends JPanel {
     public PanelResultados(IVista vista) {
         this.vista = vista;
 
-        setLayout(new GridBagLayout());
+        setLayout(new GridLayout(3, 1));
 
         jugadoresResultados = new JPanel();
         jugadoresResultados.setLayout(new GridLayout(10, 1));
-        jugadoresResultados.setFont(GUIConstants.PLAIN_FONT);
 
         add(jugadoresResultados);
 
         JLabel titulo = new JLabel("FIN DE LA RONDA");
+        titulo.setFont(GUIConstants.PLAIN_FONT);
         add(titulo);
 
         botonContinuar = new JButton("Continuar");
         botonContinuar.addActionListener(evento -> {
             botonContinuar.setEnabled(false);
-            controladorJuego.marcarListo(vista.getJugador());
+            vista.getControlador().marcarListo(vista.getJugador());
         });
         add(botonContinuar);
     }
 
     public void actualizar(TipoEvento tipoEvento) {
-        List<IJugador> jugadores = this.controladorJuego.obtenerJugadores();
+        List<IJugador> jugadores = vista.getControlador().obtenerJugadores();
         IJugador jugador = jugadores
                 .stream()
                 .filter(j -> j.equals(this.vista.getJugador()))
                 .findFirst()
                 .get();
+        // Los ordeno de mayor a menor para que el que tiene más puntos esté arriba
         jugadores.sort((o1, o2) -> o2.calcularPuntaje() - o1.calcularPuntaje());
 
         this.jugadoresResultados.removeAll();

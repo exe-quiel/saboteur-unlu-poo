@@ -75,7 +75,6 @@ public class PanelPartida extends JPanel {
         panelJugadores.setLayout(new FlowLayout());
         // panelJugadores.setPreferredSize(new Dimension(200, 500));
         TitledBorder border = new TitledBorder("Jugadores");
-        border.setTitleFont(GUIConstants.PLAIN_FONT);
         ((JPanel) panelJugadores).setBorder(border);
 
         listaDeJugadores = new JList<>();
@@ -105,8 +104,6 @@ public class PanelPartida extends JPanel {
                             sb.append(")");
                         }
                         setFont(GUIConstants.BOLD_FONT);
-                    } else {
-                        setFont(GUIConstants.PLAIN_FONT);
                     }
 
                     sb.append("<br>")

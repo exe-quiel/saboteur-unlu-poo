@@ -31,7 +31,6 @@ public class CartaTablero extends JLabel {
 
     public CartaTablero(CartaDeJuego carta, Integer x, Integer y, IVista vista) {
         super();
-        this.setFont(GUIConstants.PLAIN_FONT);
         this.x = x;
         this.y = y;
         this.setCarta(carta);
