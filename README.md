@@ -31,3 +31,11 @@ La interfaz genera eventos (por ejemplo, cuando un jugador coloca una carta sobr
 La interfaz es la siguiente:
 
 ![image](https://user-images.githubusercontent.com/20674466/203631848-cba2ed12-1a36-441d-9b70-a371baa0964f.png)
+
+La carta negra a la izquierda es la carta de inicio y las que están a la derecha con un signo de pregunta (porque no son visibles) son las de destino. En el panel inferior están las cartas de la mano del jugador. Las flechas indican para que lado se abre el túnel en esa carta. Si tiene una "x" en el medio, significa que esa carta bloquea el paso, es decir, que en el medio no está abierto el túnel.
+
+Las partes del tablero con una "X" están vacías, por lo que es posible colocar cartas de túnel ahí.
+
+A la izquierda está la lista de jugadores. Si se quiere aplicar una carta de acción a alguno de ellos, primero se debe hacer clic sobre la carta dentro de la mano y luego sobre el jugador al que se le quiere aplicar la carta.
+
+A la derecha está el chat, que es independiente de la sección izquierda donde transcurre el juego. Al finalizar la ronda, el chat se sigue mostrando, pero el panel izquierdo se reemplaza por la lista de jugadores y sus respectivos puntos acumulados durante la partida.
