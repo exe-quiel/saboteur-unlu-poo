@@ -1,6 +1,7 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.List;
 
@@ -29,16 +30,12 @@ public class PanelResultados extends JPanel {
     public PanelResultados(IVista vista) {
         this.vista = vista;
 
-        setLayout(new GridLayout(3, 1));
+        setLayout(new FlowLayout());
 
         jugadoresResultados = new JPanel();
         jugadoresResultados.setLayout(new GridLayout(10, 1));
 
         add(jugadoresResultados);
-
-        JLabel titulo = new JLabel("FIN DE LA RONDA");
-        titulo.setFont(GUIConstants.PLAIN_FONT);
-        add(titulo);
 
         botonContinuar = new JButton("Continuar");
         botonContinuar.addActionListener(evento -> {

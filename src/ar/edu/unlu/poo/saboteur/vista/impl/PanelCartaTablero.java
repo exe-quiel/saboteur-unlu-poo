@@ -1,5 +1,6 @@
 package ar.edu.unlu.poo.saboteur.vista.impl;
 
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -7,6 +8,7 @@ import javax.swing.JLabel;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
+import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 import ar.edu.unlu.poo.saboteur.util.GUIConstants;
@@ -48,6 +50,24 @@ public class PanelCartaTablero extends JLabel {
         this.setText(GUIHelper.obtenerRepresentacionGraficaCarta(carta));
         if (carta != null) {
             this.carta.setPosicion(this.x, this.y);
+
+            if (carta instanceof CartaDeTunel) {
+                CartaDeTunel cartaDeTunel = (CartaDeTunel) carta;
+                if (cartaDeTunel.getTipo() == TipoCartaTunel.INICIO || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO
+                        || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
+                    setBackground(Color.BLACK);
+                    setForeground(Color.WHITE);
+                }
+                if (cartaDeTunel.isVisible()) {
+                    if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO) {
+                        setBackground(Color.YELLOW);
+                        setForeground(Color.BLACK);
+                    } else if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
+                        setBackground(Color.GRAY);
+                        setForeground(Color.BLACK);
+                    }
+                }
+            }
         }
     }
 

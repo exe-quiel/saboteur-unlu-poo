@@ -73,23 +73,5 @@ public class PanelCartaMano extends JLabel {
         this.carta = carta;
 
         this.setText(GUIHelper.obtenerRepresentacionGraficaCarta(carta));
-
-        if (carta instanceof CartaDeTunel) {
-            CartaDeTunel cartaDeTunel = (CartaDeTunel) carta;
-            if (cartaDeTunel.getTipo() == TipoCartaTunel.INICIO || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO
-                    || cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
-                setBackground(Color.BLACK);
-                setForeground(Color.WHITE);
-            }
-            if (cartaDeTunel.isVisible()) {
-                if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_ORO) {
-                    setBackground(Color.YELLOW);
-                    setForeground(Color.BLACK);
-                } else if (cartaDeTunel.getTipo() == TipoCartaTunel.DESTINO_PIEDRA) {
-                    setBackground(Color.GRAY);
-                    setForeground(Color.BLACK);
-                }
-            }
-        }
     }
 }
