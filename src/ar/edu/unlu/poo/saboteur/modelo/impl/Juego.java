@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
-import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.EstadoPartida;
 import ar.edu.unlu.poo.saboteur.modelo.Evento;
 import ar.edu.unlu.poo.saboteur.modelo.IJuego;

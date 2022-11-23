@@ -11,11 +11,11 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
-import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.Entrada;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaTunel;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeTunel;
 
 public class GeneradorDeCartas {

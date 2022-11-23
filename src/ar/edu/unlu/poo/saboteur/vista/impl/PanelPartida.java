@@ -186,7 +186,7 @@ public class PanelPartida extends JPanel {
                         break;
                     }
                 }
-                CartaTablero label = new CartaTablero(cartaEnPosicion, x, y, this.vista);
+                PanelCartaTablero label = new PanelCartaTablero(cartaEnPosicion, x, y, this.vista);
                 label.setHorizontalAlignment(JLabel.CENTER);
                 // label.setPreferredSize(new Dimension(11 * 3, 16 * 3));
                 panelTablero.add(label);
@@ -206,7 +206,7 @@ public class PanelPartida extends JPanel {
             panelMano.add(botonPasar);
         } else {
             for (CartaDeJuego carta : this.jugador.getMano()) {
-                CartaMano cartaLabel = new CartaMano(carta, vista);
+                PanelCartaMano cartaLabel = new PanelCartaMano(carta, vista);
                 cartaLabel.setHorizontalAlignment(JLabel.CENTER);
                 panelMano.add(cartaLabel);
             }

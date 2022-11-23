@@ -3,6 +3,7 @@ package ar.edu.unlu.poo.saboteur.modelo;
 import java.util.List;
 
 import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDeAccion;
+import ar.edu.unlu.poo.saboteur.modelo.impl.CartaDePuntos;
 
 public interface IJugador {
 

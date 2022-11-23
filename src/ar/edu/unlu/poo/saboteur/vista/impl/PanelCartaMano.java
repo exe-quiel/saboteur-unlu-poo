@@ -19,7 +19,7 @@ import ar.edu.unlu.poo.saboteur.vista.IVista;
  * Representa una carta en la mano del jugador.
  *
  */
-public class CartaMano extends JLabel {
+public class PanelCartaMano extends JLabel {
 
     /**
      * 
@@ -28,7 +28,7 @@ public class CartaMano extends JLabel {
 
     private CartaDeJuego carta;
 
-    public CartaMano(CartaDeJuego carta, IVista vista) {
+    public PanelCartaMano(CartaDeJuego carta, IVista vista) {
         super();
         this.setCarta(carta);
 

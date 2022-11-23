@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ar.edu.unlu.poo.saboteur.modelo.CartaDeJuego;
-import ar.edu.unlu.poo.saboteur.modelo.CartaDePuntos;
 import ar.edu.unlu.poo.saboteur.modelo.IJugador;
 import ar.edu.unlu.poo.saboteur.modelo.RolJugador;
 import ar.edu.unlu.poo.saboteur.modelo.TipoCartaAccion;

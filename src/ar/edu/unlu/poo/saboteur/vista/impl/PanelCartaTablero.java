@@ -18,7 +18,7 @@ import ar.edu.unlu.poo.saboteur.vista.IVista;
  * Representa un espacio (slot) en el tablero, que puede estar libre o no.
  *
  */
-public class CartaTablero extends JLabel {
+public class PanelCartaTablero extends JLabel {
 
     /**
      * 
@@ -29,7 +29,7 @@ public class CartaTablero extends JLabel {
     private Integer x;
     private Integer y;
 
-    public CartaTablero(CartaDeJuego carta, Integer x, Integer y, IVista vista) {
+    public PanelCartaTablero(CartaDeJuego carta, Integer x, Integer y, IVista vista) {
         super();
         this.x = x;
         this.y = y;
@@ -60,7 +60,7 @@ public class CartaTablero extends JLabel {
                 boolean resultadoAccion = false;
                 cartaSeleccionada.setPosicion(getPosX(), getPosY());
                 if (cartaSeleccionada instanceof CartaDeTunel) {
-                    boolean estaLibre = ((CartaTablero) event.getComponent()).getCarta() == null;
+                    boolean estaLibre = ((PanelCartaTablero) event.getComponent()).getCarta() == null;
                     if (estaLibre) {
                         resultadoAccion = controlador.jugarCarta((CartaDeTunel) cartaSeleccionada);
                     } else {

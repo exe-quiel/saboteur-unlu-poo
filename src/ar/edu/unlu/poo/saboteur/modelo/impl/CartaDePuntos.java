@@ -1,4 +1,4 @@
-package ar.edu.unlu.poo.saboteur.modelo;
+package ar.edu.unlu.poo.saboteur.modelo.impl;
 
 import java.io.Serializable;
 
