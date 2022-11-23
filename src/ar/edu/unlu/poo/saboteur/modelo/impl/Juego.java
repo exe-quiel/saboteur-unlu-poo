@@ -357,7 +357,7 @@ public class Juego extends ObservableRemoto implements IJuego {
         case PRIMERA_RONDA:
         case SEGUNDA_RONDA:
         case TERCERA_RONDA:
-            this.iniciarRonda();
+            this.inicializarRonda();
 
             this.mezclarMazo();
             this.asignarRoles();
@@ -409,7 +409,7 @@ public class Juego extends ObservableRemoto implements IJuego {
      * y las coloca nuevamente en el mazo.
      * 
      */
-    private void iniciarRonda() {
+    private void inicializarRonda() {
         if (estadoPartida == EstadoPartida.PRIMERA_RONDA) {
             indiceJugadorTurno = 0;
             this.obtenerJugadorDelTurnoActual().cambiarTurno();

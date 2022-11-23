@@ -29,6 +29,4 @@ public interface IVista {
 
     public CartaDeJuego getCartaSeleccionada();
 
-
-
 }

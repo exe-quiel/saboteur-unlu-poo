@@ -259,6 +259,7 @@ public class CartaDeTunel extends CartaDeJuego {
         return false;
     }
 
+    @Override
     public void inicializar() {
         if (this.tipo != TipoCartaTunel.INICIO && this.tipo != TipoCartaTunel.DESTINO_ORO
                 && this.tipo != TipoCartaTunel.DESTINO_PIEDRA) {
